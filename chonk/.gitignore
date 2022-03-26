@@ -1,0 +1,6 @@
+.vagrant*
+*.auto.tfvars
+ymir-local*
+
+# Any host backups of chonk data
+*data*/

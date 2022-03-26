@@ -1,0 +1,73 @@
+# For root Vagrantfile to keep paths consistent; use in place of '.' in paths
+here = File.dirname(__FILE__)
+
+Vagrant.configure("2") do |config|
+  box = "chonk"
+
+  has_replica = true
+
+  # chonk should persist DB data across VM lifecycles -- change to false if you don't want that
+  persist_data = true
+
+  username = "packer"
+  password = "packer"
+
+  config.ssh.username = username
+  config.ssh.password = password
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 1
+    vb.memory = 1024
+    # vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
+    # much faster startups of subsequent identical base VMs, but leaves the base VM in VBox's storage after destroy op
+    # vb.linked_clone = true
+  end
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define "chonk" do |chonk|
+    chonk.vm.box = box
+    chonk.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+    chonk.vm.network "forwarded_port", guest: 5432, host: 5432 # Postgres
+    chonk.vm.network "forwarded_port", guest: 6379, host: 6379 # redis
+    chonk.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+    # if persist_data
+    #   chonk.vm.synced_folder "#{here}/pgdata", "/vagrant/pgdata", create: true
+    #   chonk.trigger.before :destroy do |trigger|
+    #     trigger.run_remote = { inline: "sudo -u postgres pg_dumpall > /vagrant/pgdata/dump.sql" }
+    #   end
+    # end
+
+    chonk.vm.provision "shell",
+    inline: <<-SCRIPT
+      # Unique to chonk: restore any previous data dumps
+      if #{persist_data}; then
+        [ -f /vagrant/pgdata/dump.sql ] && sudo -u postgres psql -f /vagrant/pgdata/dump.sql
+      fi
+      export app_name='chonk'
+      export aether_address='aether.service.consul'
+      bash /usr/local/ymir/scripts/run/main.sh
+    SCRIPT
+  end
+
+  if has_replica
+    config.vm.define "chonk-replica" do |replica|
+      replica.vm.box = box
+      replica.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+      replica.vm.network "forwarded_port", guest: 5432, host: 5433
+      replica.vm.network "forwarded_port", guest: 6379, host: 6380
+      replica.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+      replica.vm.provision "shell",
+        inline: <<-SCRIPT
+          export app_name='chonk-replica'
+          export aether_address='aether.service.consul'
+          bash /usr/local/ymir/scripts/run/main.sh
+        SCRIPT
+    end
+  end
+
+end

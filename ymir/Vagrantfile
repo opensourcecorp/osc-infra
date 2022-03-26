@@ -1,0 +1,34 @@
+# Ymir's VM by itself isn't really anything special, but you can use this
+# Vagrantfile to try out ad-hoc VM stuff for potential net-new platforms
+
+# For root Vagrantfile to keep paths consistent; use in place of '.' in paths
+here = File.dirname(__FILE__)
+
+Vagrant.configure("2") do |config|
+  box = "ymir"
+
+  username = "packer"
+  password = "packer"
+
+  config.ssh.username = username
+  config.ssh.password = password
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 1
+    vb.memory = 1024
+  end
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define "ymir" do |ymir|
+    ymir.vm.box = box
+    ymir.vm.synced_folder "#{here}", "/vagrant" # , disabled: true
+    ymir.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+    ymir.vm.network "forwarded_port", guest: 80, host: 8080
+    ymir.vm.provision "shell",
+      inline: "true"
+  end
+
+end

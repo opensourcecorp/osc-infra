@@ -1,0 +1,2 @@
+# markdownlint rules override file
+rules "~MD033" # inline HTML

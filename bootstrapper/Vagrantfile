@@ -1,0 +1,34 @@
+if ENV['OSC_ROOT'].nil?
+  puts "Environment variable OSC_ROOT is unset; setting Vagrant root directory as '.'"
+  root = '.'
+else
+  puts "Environment variable OSC_ROOT is set as \"#{ENV['OSC_ROOT']}\"; will use that as Vagrant root directory"
+  root = ENV['OSC_ROOT']
+end
+
+# Potential fix as described at link below, for when Vagrant is mad about DHCP
+# conflicts:
+# https://github.com/hashicorp/vagrant/issues/8878#issuecomment-345112810
+class VagrantPlugins::ProviderVirtualBox::Action::Network
+  def dhcp_server_matches_config?(dhcp_server, config)
+    true
+  end
+end
+# HOWEVER, you'll still see "non-static" IPs defined as rand() calls in child
+# Vagrantfiles, because I still can't get this to work
+
+# If you find yourself memory-constrained locally, you can comment out app
+# platforms based on their comments beside them -- typically the earlier the app
+# shows up in the list, the more important it is for downstream apps
+apps = [
+  "aether", # need always
+  "faro", # need always
+  "chonk", # need for most
+  # "sauce", # needs chonk, but only at use-time, not boot-time
+  "photobook", # needs chonk
+  "gnar" # needs photobook
+]
+
+apps.each do |app|
+  load "#{root}/#{app}/Vagrantfile"
+end

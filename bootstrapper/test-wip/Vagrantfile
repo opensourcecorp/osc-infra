@@ -1,0 +1,58 @@
+# Run `vagrant up` from this directory to test the infra bootstrapper on a
+# system that ISN'T yours :)
+
+# For root Vagrantfile to keep paths consistent; use in place of '.' in paths
+here = File.dirname(__FILE__)
+
+Vagrant.configure("2") do |config|
+  box = "debian/bullseye64"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 4
+    vb.memory = 1024 * 8
+    vb.gui = true # for debugging
+    vb.customize ['modifyvm', :id, '--vram', '256']
+    vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']
+  end
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define "osc" do |osc|
+    osc.vm.box = box
+    osc.vm.synced_folder "#{here}", "/vagrant", disabled: true
+    osc.vm.synced_folder "#{here}/..", "/osc-infra-bootstrap"
+    osc.vm.synced_folder "#{here}", "/test-scripts"
+
+    osc.vm.disk :disk, size: "100GB", primary: true
+
+    osc.vm.provision "shell",
+      inline: <<-SCRIPT
+        set -euo pipefail
+        set -x
+
+        # Give root a password so we can login to debugif needed
+        # DON'T DO THIS IN REAL LIFE, OBVIOUSLY
+        printf "test\ntest\n" | passwd root
+
+        # Copy so we don't dump any files etc. to the host dir
+        cp -r /osc-infra-bootstrap/* /root/
+        cp -r /test-scripts/* /root/
+        
+        cd /root
+
+        # Might have fly CLI etc., so remove them for the freshest experience
+        rm -rf fly .vagrant
+
+        export OSC_ROOT=${PWD}
+        bash ./init.sh
+
+        # Vagrant shell provisioner seems to have something set that confuses
+        # `packer init` and it puts plugins in the wrong place, so fix that here
+        export PACKER_CONFIG_DIR="${HOME}"/.packer.d
+        bash ./osc-infra-bootstrap.sh
+      SCRIPT
+  end
+
+end

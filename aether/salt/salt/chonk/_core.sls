@@ -1,0 +1,211 @@
+##################
+### PostgreSQL ###
+##################
+
+configure_minion_postgres_access:
+  file.append:
+  - name: /etc/salt/minion
+  - text:
+    - |
+      postgres.bins_dir: /usr/lib/postgresql/{{ pillar["postgres_version_major"] }}/bin/
+
+install_postgres:
+  pkg.installed:
+  - pkgs:
+    - postgresql-{{ pillar["postgres_version_major"] }}
+    - postgresql-client-{{ pillar["postgres_version_major"] }}
+
+edit_postgres_settings:
+  file.managed:
+  - name: /etc/postgresql/{{ pillar["postgres_version_major"] }}/main/conf.d/main.conf
+  - replace: true
+  - contents: |
+      # Primary settings
+      listen_addresses = '*'
+
+      # TLS
+      ssl = on
+      ssl_cert_file = '/usr/local/share/ca-certificates/{{ pillar['app_name'] }}.crt'
+      ssl_key_file = '/etc/ssl/private/{{ pillar['app_name'] }}.key'
+      ssl_ca_file = '/usr/local/share/ca-certificates/osc-ca.crt'
+
+      # Core/shared replication settings, which senders & replicas can both have set
+      synchronous_standby_names = '*'
+      wal_level = replica
+      max_wal_senders = 10 # default
+      max_replication_slots = 10 # default
+      wal_keep_size = 1 # MB with no units; default 0
+      max_slot_wal_keep_size = -1 # unlimited; default
+      wal_sender_timeout = 60s # default
+      track_commit_timestamp = on # default is 'off'
+
+edit_postgres_for_password_auth:
+  file.append:
+  - name: /etc/postgresql/{{ pillar["postgres_version_major"] }}/main/pg_hba.conf
+  - text:
+    - |
+      # Added by Salt
+      hostssl    all            all        10.0.0.0/8    password
+      hostssl    replication    replica    10.0.0.0/8    password
+
+add_replication_user:
+  postgres_user.present:
+  - name: replica
+  - password: {{ pillar['chonk_postgres_replica_password'] }}
+  - login: true
+  - replication: true
+
+{% for component, cfg in pillar.harbor_dbs.items() %}
+{% if cfg is mapping %}
+photobook_init_{{ component }}:
+  postgres_user.present:
+  - name: {{ cfg['user'] }}
+  - password: {{ cfg['password'] }}
+  - login: true
+  postgres_database.present:
+  - name: {{ cfg['dbname'] }}
+  - owner: {{ cfg['user'] }}
+  - owner_recurse: true
+{% endif %}
+{% endfor %}
+
+### App-specific needs for Postgres
+
+# comms_init:
+#   postgres_user.present:
+#   - name: {{ pillar["comms_db_user"] }}
+#   - password: {{ pillar["comms_db_password"] }}
+#   - login: true
+#   postgres_database.present:
+#   - name: {{ pillar["comms_db_name"] }}
+#   - owner: {{ pillar["comms_db_user"] }}
+#   - owner_recurse: true
+#   # Zulip also needs a schema within its DB
+#   postgres_schema.present:
+#   - name: {{ pillar["comms_db_schema_name"] }}
+#   - dbname: {{ pillar["comms_db_name"] }}
+
+gnar_init:
+  postgres_user.present:
+  - name: {{ pillar["concourse_postgres_user"] }}
+  - password: {{ pillar["concourse_postgres_password"] }}
+  - login: true
+  postgres_database.present:
+  - name: {{ pillar["concourse_postgres_database"] }}
+  - owner: {{ pillar["concourse_postgres_user"] }}
+  - owner_recurse: true
+
+sauce_init:
+  postgres_user.present:
+  - name: {{ pillar["gitea_postgres_user"] }}
+  - password: {{ pillar["gitea_postgres_password"] }}
+  - login: true
+  postgres_database.present:
+  - name: {{ pillar["gitea_postgres_database"] }}
+  - owner: {{ pillar["gitea_postgres_user"] }}
+  - owner_recurse: true
+
+# Tables for each app's backend DB will be keyed by workspace name, so no need to configure those
+{% for appname, cfg in pillar.terraform_backends.items() %}
+terraform_backend_init_{{ appname }}:
+  postgres_user.present:
+  - name: "{{ cfg['pg']['dbuser'] }}"
+  - password: "{{ cfg['pg']['dbpass'] }}"
+  - encrypted: 'scram-sha-256'
+  - login: true
+  postgres_database.present:
+  - name: "{{ cfg['pg']['dbname'] }}"
+  - owner: "{{ cfg['pg']['dbuser'] }}"
+  - owner_recurse: true
+{% endfor %}
+
+# Postgres has a root service, and then a "real" one. Restart the target, then check the actual service
+# TODO: don't run hard restarts every Salt call, be more graceful somehow
+restart_postgres:
+  cmd.run:
+  - name: systemctl restart postgresql.service
+
+verify_postgres_running:
+  service.running:
+  - name: postgresql@{{ pillar["postgres_version_major"] }}-main.service
+  - enable: true
+  - init_delay: 3
+
+################################################################################
+
+#############
+### redis ###
+#############
+
+# # The actual test step can be comment-toggled in the compile state below, since it takes a long time to run
+# install_tcl_for_redis_tests:
+#   pkg.installed:
+#   - pkgs: 
+#     - tcl
+
+get_redis_stable:
+  archive.extracted:
+  - name: /tmp
+  - source: https://download.redis.io/redis-stable.tar.gz
+  - skip_verify: true
+  - if_missing: /tmp/redis-stable
+
+compile_and_install_redis:
+  cmd.run:
+  - name: |
+      cd /tmp/redis-stable
+      make BUILD_TLS=yes
+      # make test # optional, but takes a long time (also requires `tcl`)
+      make install BUILD_TLS=yes
+      which redis-server # to make sure if & where it made it onto the PATH
+  # If not running as root, we'd need to `sudo make install`, so specify just in case this ever defaults to another user
+  - runas: root
+  - creates:
+    - /usr/local/bin/redis-server
+
+create_redis_config:
+  file.managed:
+  - name: /etc/redis/redis.conf
+  - makedirs: true
+  - replace: true
+  - contents: |
+      # TLS
+      port             0
+      tls-port         {{ pillar['chonk_redis_port'] }}
+      tls-cert-file    /usr/local/share/ca-certificates/{{ pillar['app_name'] }}.crt
+      tls-key-file     /etc/ssl/private/{{ pillar['app_name'] }}.key
+      tls-ca-cert-file /usr/local/share/ca-certificates/osc-ca.crt
+      tls-replication  yes
+      tls-cluster      yes
+      tls-auth-clients no
+
+      ### Auth
+      # TODO: this just allows everything for every client, but still requires a password
+      user default on +@all ~* >{{ pillar['chonk_redis_password'] }}
+
+create_redis_service:
+  file.managed:
+  - name: /etc/systemd/system/redis-server.service
+  - replace: true
+  - contents: |
+      [Unit]
+      Description=redis server
+
+      [Service]
+      User=root
+      ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+  cmd.run:
+  - name: |
+      systemctl daemon-reload
+      systemctl restart redis-server.service
+
+verify_redis_running:
+  service.running:
+  - name: redis-server.service
+  - enable: true
+  - init_delay: 3

@@ -1,0 +1,68 @@
+runtime: &runtime
+  platform: linux
+  inputs:
+  - name: ((repo.name))-src
+    path: ((repo.name))
+  image_resource:
+    type: docker-image # registry-image doesn't have an insecure option yet, but it's on their master branch
+    source: 
+      repository: photobook.service.consul:8090/library/debian
+      tag: latest
+      insecure_registries: ["photobook.service.consul:8090"] # until photobook has a TLS cert
+      # insecure: true # NOT RELEASED YET
+
+task-main: &task-main
+  <<: *runtime
+
+resources:
+- name: ((repo.name))-src
+  source:
+    branch: ((repo.branch))
+    uri: ((repo.uri))
+  type: git
+
+jobs:
+- name: build
+  plan:
+  - get: ((repo.name))-src
+    trigger: true
+  - task: build
+    config:
+      <<: *task-main
+      run:
+        path: bash
+        args:
+          - '-c'
+          - |
+            bash ((repo.name))/scripts/sysinit.sh
+            make -C ((repo.name)) build
+- name: test
+  plan:
+  - get: ((repo.name))-src
+    trigger: true
+    passed: [build]
+  - task: test
+    config:
+      <<: *task-main
+      run:
+        path: bash
+        args:
+          - '-c'
+          - |
+            bash ((repo.name))/scripts/sysinit.sh
+            make -C ((repo.name)) test
+- name: push
+  plan:
+  - get: ((repo.name))-src
+    trigger: true
+    passed: [test]
+  - task: push
+    config:
+      <<: *task-main
+      run:
+        path: bash
+        args:
+          - '-c'
+          - |
+            bash ((repo.name))/scripts/sysinit.sh
+            make -C ((repo.name)) push

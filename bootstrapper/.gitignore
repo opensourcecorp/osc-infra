@@ -1,0 +1,9 @@
+.vagrant*
+*.auto.tfvars
+ymir-local*
+
+# fly CLI from gnar/Concourse
+fly*
+
+# Log files
+*.log

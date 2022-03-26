@@ -1,0 +1,4 @@
+# aether       https://github.com/opensourcecorp/aether.git       main
+# faro         https://github.com/opensourcecorp/faro.git         main
+# chonk        https://github.com/opensourcecorp/chonk.git        main
+ghostwriter  https://github.com/opensourcecorp/ghostwriter.git  main

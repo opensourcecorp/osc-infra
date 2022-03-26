@@ -1,0 +1,35 @@
+# Main, "fat" OCI image for literally whatever the f*ck you could want
+FROM debian:unstable
+
+ARG go_version=1.17.5
+ARG terraform_version=1.1.2
+
+WORKDIR /tmp
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+      ca-certificates \
+      curl \
+      gnupg \
+      make \
+      python3 \
+      python3-pip \
+      python3-venv \
+      unzip \
+      zip
+
+# Go
+RUN curl -fsSL -o /tmp/"go${go_version}".tar.gz https://golang.org/dl/go"${go_version}".linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf /tmp/"go${go_version}".tar.gz && \
+    rm -rf /tmp/*
+
+# Terraform
+RUN curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/"${terraform_version}"/terraform_"${terraform_version}"_linux_amd64.zip && \
+    unzip /tmp/terraform.zip && \
+    mv ./terraform /usr/local/bin/terraform && \
+    rm -rf /tmp/*
+
+# Now wrap it all up by dropping from the root user
+RUN useradd -m ci-user
+WORKDIR /home/ci-user
+USER ci-user

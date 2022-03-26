@@ -1,0 +1,6 @@
+.vagrant*
+*.auto.pkrvars.hcl
+!example.auto.pkrvars.hcl
+output*
+packer_cache/
+packer-manifest.json

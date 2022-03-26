@@ -1,0 +1,4 @@
+concourse*
+fly
+vars/*
+!vars/dev
