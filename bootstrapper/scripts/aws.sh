@@ -38,25 +38,25 @@ if [[ "${instruction:-down}" == 'up' ]]; then
     only=amazon-ebs.main
 
   # BUILD
-  while read -r repo; do
+  while read -r platform; do
 
     # Build the other images from Ymir's AMI build output
-    if [[ "${repo}" != 'ymir' ]]; then
+    if [[ "${platform}" != 'ymir' ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${repo}" != 'aether' ]] ; then
+      if [[ "${platform}" != 'aether' ]] ; then
         aws-up aether
-        if [[ "${repo}" != 'faro' ]] ; then
+        if [[ "${platform}" != 'faro' ]] ; then
           aws-up faro
-          if [[ "${repo}" != 'chonk' ]] ; then
+          if [[ "${platform}" != 'chonk' ]] ; then
             aws-up chonk
           fi
         fi
       fi
       # Symlink ymir's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${repo}"/ymir-local
-      make -C "${OSC_ROOT}/${repo}"/ymir-local build \
-        app_name="${repo}" \
-        var_file="$(realpath "${OSC_ROOT}/${repo}"/ymirvars/amazon-ebs.pkrvars.hcl)" \
+      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${platform}"/ymir-local
+      make -C "${OSC_ROOT}/${platform}"/ymir-local build \
+        app_name="${platform}" \
+        var_file="$(realpath "${OSC_ROOT}/${platform}"/ymirvars/amazon-ebs.pkrvars.hcl)" \
         only=amazon-ebs.main
     fi
 
@@ -65,15 +65,15 @@ if [[ "${instruction:-down}" == 'up' ]]; then
     # hair out trying to find out how/where in the world this happens
     [[ -L "${OSC_ROOT}"/ymir/ymir ]] && rm "${OSC_ROOT}"/ymir/ymir
 
-  done < ./repos.txt
+  done < ./platforms.txt
 
   # LAUNCH
-  while read -r repo; do
-    aws-up "${repo}"
-  done < ./repos.txt
+  while read -r platform; do
+    aws-up "${platform}"
+  done < ./platforms.txt
 
 elif [[ "${instruction}" == 'down' ]]; then
-  while read -r repo; do
-    aws-down "${repo}"
-  done < ./repos.txt
+  while read -r platform; do
+    aws-down "${platform}"
+  done < ./platforms.txt
 fi

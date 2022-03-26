@@ -32,18 +32,6 @@ check-required-tools() {
   check-errors
 }
 
-# Clones repos, skipping if they're already found under OSC_ROOT
-repo-clone() {
-  local repo="$1"
-  if [[ ! -d "${OSC_ROOT}/${repo}" ]]; then
-    printf 'Infra repo %s not found at OSC_ROOT; cloning locally...\n' "${repo}"
-    git clone "https://github.com/opensourcecorp/${repo}.git" "${OSC_ROOT}/${repo}"
-  else
-    printf 'Infra repo %s already found at OSC_ROOT; skipping clone but checking for updates...\n' "${repo}"
-    git -C "${OSC_ROOT}/${repo}" pull
-  fi
-}
-
 # Adds dummy secret SLS files to Aether's repo, so all the services needing
 # secrets can start.
 add-aether-dummy-secrets() {
@@ -85,23 +73,23 @@ add-tls-ca-cert() {
 
 ### AWS
 aws-up() {
-  app_name="$1"
-  if [[ "${app_name}" == 'ymir' ]]; then
+  platform="$1"
+  if [[ "${platform}" == 'ymir' ]]; then
     printf 'Ymir has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${app_name}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform apply -var-file=aws.tfvars -auto-approve
 }
 
 aws-down() {
-  app_name="$1"
-  if [[ "${app_name}" == 'ymir' ]]; then
+  platform="$1"
+  if [[ "${platform}" == 'ymir' ]]; then
     printf 'Ymir has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${app_name}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform destroy -var-file=aws.tfvars -auto-approve
 }

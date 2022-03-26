@@ -35,11 +35,11 @@ export PACKER_CACHE_DIR="${OSC_ROOT}/.packer.d/packer_cache"
 export PKR_VAR_headless=true
 
 # BIG OL' LOOP
-while read -r repo; do
+while read -r platform; do
 
   # Build the Ymir base image if it doesn't exist (and if we haven't already
   # checked in this loop)
-  if [[ "${repo}" == 'ymir' ]]; then
+  if [[ "${platform}" == 'ymir' ]]; then
     if [[ ! -d "${OSC_ROOT}"/ymir/output-virtualbox-iso-ymir/ ]]; then
       printf 'Ymir base image output directory not found; creating Ymir base image\n'
       make -C "${OSC_ROOT}"/ymir vagrant-box \
@@ -53,27 +53,27 @@ while read -r repo; do
   fi
 
   # Build the other images from Ymir's OVF build output, if they don't exist
-  if [[ "${repo}" != 'ymir' ]]; then
-    if [[ ! -d "${OSC_ROOT}/ymir/output-virtualbox-ovf-${repo}/" ]]; then
+  if [[ "${platform}" != 'ymir' ]]; then
+    if [[ ! -d "${OSC_ROOT}/ymir/output-virtualbox-ovf-${platform}/" ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${repo}" != 'aether' ]] ; then
+      if [[ "${platform}" != 'aether' ]] ; then
         vagrant up aether
-        if [[ "${repo}" != 'faro' ]] ; then
+        if [[ "${platform}" != 'faro' ]] ; then
           vagrant up faro
-          if [[ "${repo}" != 'chonk' ]] ; then
+          if [[ "${platform}" != 'chonk' ]] ; then
             vagrant up chonk chonk-replica
           fi
         fi
       fi
       # Symlink ymir's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${repo}"/ymir-local
-      make -C "${OSC_ROOT}/${repo}"/ymir-local vagrant-box \
-        app_name="${repo}" \
-        var_file="$(realpath "${OSC_ROOT}/${repo}"/ymirvars/virtualbox-ovf.pkrvars.hcl)" \
+      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${platform}"/ymir-local
+      make -C "${OSC_ROOT}/${platform}"/ymir-local vagrant-box \
+        app_name="${platform}" \
+        var_file="$(realpath "${OSC_ROOT}/${platform}"/ymirvars/virtualbox-ovf.pkrvars.hcl)" \
         only=virtualbox-ovf.main
     else
-      printf '%s base image output directory found; skipping build\n' "${repo}"
-      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/ymir/output-virtualbox-iso-"${repo}"/
+      printf '%s base image output directory found; skipping build\n' "${platform}"
+      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/ymir/output-virtualbox-iso-"${platform}"/
     fi
   fi
 
@@ -82,7 +82,7 @@ while read -r repo; do
   # hair out trying to find out how/where in the world this happens
   [[ -L "${OSC_ROOT}"/ymir/ymir ]] && rm "${OSC_ROOT}"/ymir/ymir
 
-done < ./repos.txt
+done < ./platforms.txt
 
 # LAUNCH
 vagrant up

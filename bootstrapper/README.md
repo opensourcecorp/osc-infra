@@ -64,8 +64,7 @@ your calling shell's `stdout/stderr`, as well as in your host's VirtualBox GUI.
 If the stack creation hangs on `Waiting for SSH` for more than a minute or so,
 look in your VirtualBox GUI to see if the pending VM is frozen at boot (a
 blinking cursor at the top left of its screen, with nothing else). If that
-happens, `Ctrl+C` in your terminal to stop the process, `vagrant destroy -f
-[name of app it hung on, e.g. chonk]`, and run the bootstrapper script again.
+happens, you can right-click -> "Reset" on the hung VM.
 
 If the full stack creation succeeds, you will receive a message in your terminal
 saying as much, with instructions on how to tear it all down.

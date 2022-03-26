@@ -128,7 +128,7 @@ variable "shell_provisioner" {
 variable "source_files" {
   description = "Optional list of files/directories to copy into the builder as part of the file provisioner"
   type        = list(string)
-  default     = ["./LICENSE"] # Needs a default so the provisioner doesn't fail
+  default     = ["./README.md"] # Needs a default so the provisioner doesn't fail
 }
 
 variable "ssh_password" {
