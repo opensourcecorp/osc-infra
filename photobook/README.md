@@ -5,7 +5,7 @@ photobook
 
 ---
 
-[Harbor](https://goharbor.io) deployment management & config.
+OCI image registry deployment management & config.
 
 How to deploy
 -------------
