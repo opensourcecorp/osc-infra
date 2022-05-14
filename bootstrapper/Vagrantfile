@@ -1,6 +1,6 @@
 if ENV['OSC_ROOT'].nil?
-  puts "Environment variable OSC_ROOT is unset; setting Vagrant root directory as '.'"
-  root = '.'
+  puts "Environment variable OSC_ROOT is unset; setting Vagrant root directory as '..'"
+  root = '..'
 else
   puts "Environment variable OSC_ROOT is set as \"#{ENV['OSC_ROOT']}\"; will use that as Vagrant root directory"
   root = ENV['OSC_ROOT']
@@ -17,18 +17,29 @@ end
 # HOWEVER, you'll still see "non-static" IPs defined as rand() calls in child
 # Vagrantfiles, because I still can't get this to work
 
-# If you find yourself memory-constrained locally, you can comment out app
-# platforms based on their comments beside them -- typically the earlier the app
-# shows up in the list, the more important it is for downstream apps
-apps = [
+# If you find yourself memory-constrained locally, you can selectively add
+# additional OSC subsystems with the env var 'OSC_SUBSYSTEMS', which is a
+# comma-separated string of subsystem names. The earlier the subsystem shows up
+# in the list, the more important it is for downstream subsystems
+core_subsystems = [
   "aether", # need always
   "faro", # need always
   "chonk", # need for most
   # "sauce", # needs chonk, but only at use-time, not boot-time
-  "photobook", # needs chonk
-  "gnar" # needs photobook
+  # "photobook", # needs chonk
+  # "gnar" # needs photobook
 ]
+if ENV['OSC_SUBSYSTEMS'].nil?
+  puts "Environment variable OSC_SUBSYSTEMS is unset, so starting core subsystems only:"
+  subsystems = core_subsystems
+  puts subsystems
+else
+  puts "Environment variable OSC_SUBSYSTEMS was set as '#{ENV['OSC_SUBSYSTEMS']}', so will try to start those listed in addition to core subsystems:"
+  addl_subsystems = ENV['OSC_SUBSYSTEMS'].split(',')
+  subsystems = core_subsystems + addl_subsystems
+  puts subsystems
+end
 
-apps.each do |app|
-  load "#{root}/#{app}/Vagrantfile"
+subsystems.each do |subsystem|
+  load "#{root}/#{subsystem}/Vagrantfile"
 end
