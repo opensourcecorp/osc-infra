@@ -1,7 +1,8 @@
 gaia
 ====
 
-*She lay with Heaven and bore the Titans...*
+She lay with Heaven and bore the Titans
+---------------------------------------
 
 ---
 

@@ -9,7 +9,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.61.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 3.0 |
 
 ## Modules
 
@@ -40,6 +40,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_custom_tags"></a> [custom\_tags](#input\_custom\_tags) | Any custom tags you want to apply to the VPC resources | `map(any)` | `{}` | no |
 | <a name="input_is_osc_core"></a> [is\_osc\_core](#input\_is\_osc\_core) | Whether the deployment represent core OSC infrastructure. Defaults to 'false' to prevent accidental misrepresenation | `bool` | `false` | no |
 | <a name="input_name_tag"></a> [name\_tag](#input\_name\_tag) | Value for 'Name' tags | `string` | `"osc"` | no |
 | <a name="input_source_address"></a> [source\_address](#input\_source\_address) | URI to the source of the code that actually calls this module | `string` | n/a | yes |
