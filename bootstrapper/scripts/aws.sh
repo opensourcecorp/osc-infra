@@ -38,25 +38,25 @@ if [[ "${instruction:-down}" == 'up' ]]; then
     only=amazon-ebs.main
 
   # BUILD
-  while read -r platform; do
+  while read -r subsystem; do
 
     # Build the other images from Ymir's AMI build output
-    if [[ "${platform}" != 'ymir' ]]; then
+    if [[ "${subsystem}" != 'ymir' ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${platform}" != 'aether' ]] ; then
+      if [[ "${subsystem}" != 'aether' ]] ; then
         aws-up aether
-        if [[ "${platform}" != 'faro' ]] ; then
+        if [[ "${subsystem}" != 'faro' ]] ; then
           aws-up faro
-          if [[ "${platform}" != 'chonk' ]] ; then
+          if [[ "${subsystem}" != 'chonk' ]] ; then
             aws-up chonk
           fi
         fi
       fi
       # Symlink ymir's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${platform}"/ymir-local
-      make -C "${OSC_ROOT}/${platform}"/ymir-local build \
-        app_name="${platform}" \
-        var_file="$(realpath "${OSC_ROOT}/${platform}"/ymirvars/amazon-ebs.pkrvars.hcl)" \
+      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${subsystem}"/ymir-local
+      make -C "${OSC_ROOT}/${subsystem}"/ymir-local build \
+        app_name="${subsystem}" \
+        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/ymirvars/amazon-ebs.pkrvars.hcl)" \
         only=amazon-ebs.main
     fi
 
@@ -65,15 +65,15 @@ if [[ "${instruction:-down}" == 'up' ]]; then
     # hair out trying to find out how/where in the world this happens
     [[ -L "${OSC_ROOT}"/ymir/ymir ]] && rm "${OSC_ROOT}"/ymir/ymir
 
-  done < ./platforms.txt
+  done < ./subsystems.txt
 
   # LAUNCH
-  while read -r platform; do
-    aws-up "${platform}"
-  done < ./platforms.txt
+  while read -r subsystem; do
+    aws-up "${subsystem}"
+  done < ./subsystems.txt
 
 elif [[ "${instruction}" == 'down' ]]; then
-  while read -r platform; do
-    aws-down "${platform}"
-  done < ./platforms.txt
+  while read -r subsystem; do
+    aws-down "${subsystem}"
+  done < ./subsystems.txt
 fi
