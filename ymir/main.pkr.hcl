@@ -186,7 +186,7 @@ source "virtualbox-iso" "main" {
   vboxmanage = [
     ["modifyvm", "{{ .Name }}", "--memory", "${var.virtualbox_memory}"],
     ["modifyvm", "{{ .Name }}", "--cpus", "1"],
-    ["modifyvm", "{{ .Name }}", "--vram", "128"],
+    ["modifyvm", "{{ .Name }}", "--vram", "16"],
     ["modifyvm", "{{ .Name }}", "--nic1", "nat"],
     ["modifyvm", "{{ .Name }}", "--nic2", "hostonly", "--hostonlyadapter2", "vboxnet0"]
   ]
@@ -205,7 +205,7 @@ source "virtualbox-ovf" "main" {
   vboxmanage = [
     ["modifyvm", "{{ .Name }}", "--memory", "${var.virtualbox_memory}"],
     ["modifyvm", "{{ .Name }}", "--cpus", "1"],
-    ["modifyvm", "{{ .Name }}", "--vram", "128"],
+    ["modifyvm", "{{ .Name }}", "--vram", "16"],
     ["modifyvm", "{{ .Name }}", "--nic1", "nat"],
     ["modifyvm", "{{ .Name }}", "--nic2", "hostonly", "--hostonlyadapter2", "vboxnet0"]
   ]
