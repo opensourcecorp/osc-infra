@@ -55,35 +55,21 @@ add_replication_user:
   - login: true
   - replication: true
 
-{% for component, cfg in pillar.harbor_dbs.items() %}
-{% if cfg is mapping %}
-ociregistry_init_{{ component }}:
-  postgres_user.present:
-  - name: {{ cfg['user'] }}
-  - password: {{ cfg['password'] }}
-  - login: true
-  postgres_database.present:
-  - name: {{ cfg['dbname'] }}
-  - owner: {{ cfg['user'] }}
-  - owner_recurse: true
-{% endif %}
-{% endfor %}
-
 ### App-specific needs for Postgres
 
-# comms_init:
-#   postgres_user.present:
-#   - name: {{ pillar["comms_db_user"] }}
-#   - password: {{ pillar["comms_db_password"] }}
-#   - login: true
-#   postgres_database.present:
-#   - name: {{ pillar["comms_db_name"] }}
-#   - owner: {{ pillar["comms_db_user"] }}
-#   - owner_recurse: true
-#   # Zulip also needs a schema within its DB
-#   postgres_schema.present:
-#   - name: {{ pillar["comms_db_schema_name"] }}
-#   - dbname: {{ pillar["comms_db_name"] }}
+comms_init:
+  postgres_user.present:
+  - name: {{ pillar["comms_db_user"] }}
+  - password: {{ pillar["comms_db_password"] }}
+  - login: true
+  postgres_database.present:
+  - name: {{ pillar["comms_db_name"] }}
+  - owner: {{ pillar["comms_db_user"] }}
+  - owner_recurse: true
+  # Zulip also needs a schema within its DB
+  postgres_schema.present:
+  - name: {{ pillar["comms_db_schema_name"] }}
+  - dbname: {{ pillar["comms_db_name"] }}
 
 cicd_init:
   postgres_user.present:

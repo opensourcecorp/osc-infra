@@ -89,12 +89,12 @@ enable_prometheus_node_exporter:
   - name: prometheus-node-exporter
   - enable: true
 
-# For Faro
+# For netsvc
 fresh_consul_config_directory:
   file.absent:
   - name: /etc/consul.d/
 {% if pillar['app_name'] not in ['netsvc'] %}
-# Need to be able to resolve DNS requests if Faro is down
+# Need to be able to resolve DNS requests if netsvc is down
 set_main_dns_config:
   file.managed:
   - name: /etc/systemd/resolved.conf.d/main.conf
@@ -126,8 +126,8 @@ symlink_systemd_resolved_stub:
   - target: /run/systemd/resolve/stub-resolv.conf
   - force: true
   - backupname: /etc/resolv.conf.bak
-  # Test that the above set everything correctly, but not on Aether since
-  # neither it nor Faro should be running yet
+  # Test that the above set everything correctly, but not on configmgmt since
+  # neither it nor netsvc should be running yet
   cmd.run:
   - name: |
       sleep 1
@@ -157,7 +157,7 @@ enable_consul_client_agent:
   - name: /etc/systemd/system/consul-client-agent.service
   - contents: |
       [Unit]
-      Description=Faro Consul Client Agent
+      Description=netsvc Consul Client Agent
 
       [Service]
       User=root

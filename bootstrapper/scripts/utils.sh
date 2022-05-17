@@ -32,10 +32,10 @@ check-required-tools() {
   check-errors
 }
 
-# Adds dummy secret SLS files to Aether's repo, so all the services needing
+# Adds dummy secret SLS files to configmgmt's repo, so all the services needing
 # secrets can start.
 add-configmgmt-dummy-secrets() {
-  printf 'Checking for any missing, needed, dummy secrets for services to Aether so they can start\n'
+  printf 'Checking for any missing, needed, dummy secrets for services to configmgmt so they can start\n'
   printf "!!! YOU BETTER CHANGE THESE IF YOU DEPLOY THIS STUFF FOR REAL, OBVIOUSLY !!!\n"
   find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-dummy-secrets
   while read -r secrets_file; do
@@ -75,10 +75,10 @@ add-tls-ca-cert() {
 aws-up() {
   platform="$1"
   if [[ "${platform}" == 'imgbuilder' ]]; then
-    printf 'Ymir has no launch candidate; skipping\n'
+    printf 'imgbuilder has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/infracode || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform apply -var-file=aws.tfvars -auto-approve
 }
@@ -86,10 +86,10 @@ aws-up() {
 aws-down() {
   platform="$1"
   if [[ "${platform}" == 'imgbuilder' ]]; then
-    printf 'Ymir has no launch candidate; skipping\n'
+    printf 'imgbuilder has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/infracode || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform destroy -var-file=aws.tfvars -auto-approve
 }

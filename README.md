@@ -2,8 +2,8 @@
 
 This repository serves as the monorepo that manages all core infrastructure
 subsystems for [OpenSourceCorp](https://opensourcecorp.org). Each subdirectory
-should contain a `README.md` with its own documentation. A Directory table is
-below as a high-level reference.
+should contain a `README.md` with its own documentation as needed. A Directory
+table is provided below as a high-level reference.
 
 ## Directory
 
@@ -17,11 +17,11 @@ table*** are to be considered work-in-progress, and not in active use yet.
 | Subsystem Name                 | Subsystem Description/Purpose
 | --------------                 | -----------------------------
 | [bootstrapper](./bootstrapper) | Bootstrapping utility for subsytems
-| [imgbuilder](./imgbuilder)                 | Machine-image builder framework
-| [configmgmt](./configmgmt)             | Configuration management subsystem for images built by [imgbuilder](./imgbuilder)
-| [netsvc](./netsvc)                 | Service discovery, DNS stubbing
-| [datastore](./datastore)               | Common storage (RDBMS, cache, etc)
-| [sourcecode](./sourcecode)               | Source-code management
-| [ociregistry](./ociregistry)       | OCI image registry
+| [imgbuilder](./imgbuilder)     | Machine-image builder framework
+| [configmgmt](./configmgmt)     | Configuration management subsystem for images built by [imgbuilder](./imgbuilder)
+| [netsvc](./netsvc)             | Service discovery, DNS stubbing
+| [datastore](./datastore)       | Common storage (RDBMS, cache, etc)
+| [sourcecode](./sourcecode)     | Source-code management
+| [ociregistry](./ociregistry)   | OCI image registry
 | [cicd](./cicd)                 | CI/CD
-| [gaia](./gaia)                 | Infrastructure-as-code modules
+| [infracode](./infracode)       | Infrastructure-as-code modules

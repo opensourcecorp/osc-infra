@@ -54,7 +54,7 @@ resource "aws_spot_instance_request" "main" {
           Key=Name,Value=${var.name_tag} \
           Key=spot_request_id,Value=${self.id} \
           Key="osc:core",Value=${var.is_osc_core ? "true" : "false"} \
-          Key=module_source,Value=https://github.com/opensourcecorp/gaia//providers/aws/ec2_instance \
+          Key=module_source,Value=https://github.com/opensourcecorp/infracode//providers/aws/ec2_instance \
           Key=deployment_source,Value=${var.source_address}
     SCRIPT
     # # TODO: Figure out how to get this to work

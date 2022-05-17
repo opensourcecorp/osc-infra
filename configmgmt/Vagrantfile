@@ -1,4 +1,4 @@
-# This Vagrantfile is used to stand up a local Aether master, for the purpose of
+# This Vagrantfile is used to stand up a local configmgmt master, for the purpose of
 # debugging the image build, but more importantly to provide a master node for
 # other local image builds to use for their configuration.
 

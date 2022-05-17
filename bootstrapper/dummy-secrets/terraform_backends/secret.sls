@@ -5,11 +5,6 @@ terraform_backends:
       dbname: terraform_backend_configmgmt
       dbuser: tf_user_configmgmt
       dbpass: passwd
-  atlas:
-    pg:
-      dbname: terraform_backend_atlas
-      dbuser: tf_user_atlas
-      dbpass: passwd
   datastore:
     pg:
       dbname: terraform_backend_datastore
@@ -24,16 +19,6 @@ terraform_backends:
     pg:
       dbname: terraform_backend_monitor
       dbuser: tf_user_monitor
-      dbpass: passwd
-  padl:
-    pg:
-      dbname: terraform_backend_padl
-      dbuser: tf_user_padl
-      dbpass: passwd
-  ociregistry:
-    pg:
-      dbname: terraform_backend_ociregistry
-      dbuser: tf_user_ociregistry
       dbpass: passwd
   sourcecode:
     pg:

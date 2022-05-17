@@ -18,7 +18,7 @@ if [[ -z "${configmgmt_address:-}" ]]; then
   exit 1
 fi
 
-# Need to edit the Consul Client config first, so it can use Aether's DNS name
+# Need to edit the Consul Client config first, so it can use configmgmt's DNS name
 # TODO: make this less of a garbage thing to do; the iface name could also end up being super brittle
 if [[ "${app_name}" != 'netsvc' ]]; then
   ip_addr=$(ip address show dev enp0s8 | grep -Eo '10\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+' | head -n1)
@@ -37,7 +37,7 @@ if grep -qE ".*-build.*" /etc/salt/minion ; then
     -e "s/^master:.*$/master: ${configmgmt_address}/g" \
     /etc/salt/minion
 
-  # In case there's a cached key from a previous Salt Master; see the Aether README
+  # In case there's a cached key from a previous Salt Master; see the configmgmt README
   rm -rf /etc/salt/pki/minion/minion_master.pub
   systemctl restart salt-minion.service
 fi

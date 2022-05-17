@@ -32,7 +32,7 @@ variable "app_name" {
 }
 
 variable "configmgmt_address" {
-  description = "Address of Aether master node/router"
+  description = "Address of configmgmt master node/router"
   type        = string
   default     = "10.0.1.10"
 }

@@ -9,7 +9,7 @@ add_concourse_env_to_file:
       CONCOURSE_CONTAINERD_BIN={{ pillar['concourse_containerd_bin'] }}
       CONCOURSE_CONTAINERD_CNI_PLUGINS_DIR={{ pillar['concourse_containerd_cni_plugins_dir'] }}
       CONCOURSE_CONTAINERD_INIT_BIN={{ pillar['concourse_containerd_init_bin'] }}
-      # TODO: need to set DNS explicitly this because containerd copies resolv.conf from the host, which with Faro/systemd-resolved is a symlink, so that doesn't work
+      # TODO: need to set DNS explicitly this because containerd copies resolv.conf from the host, which with netsvc/systemd-resolved is a symlink, so that doesn't work
       CONCOURSE_CONTAINERD_DNS_SERVER={{ pillar['netsvc_private_ip'] }},8.8.8.8,8.8.4.4,1.1.1.1,1.0.0.1
       CONCOURSE_NODE_TYPE={{ pillar['concourse_node_type'] }}
       CONCOURSE_RUNAS_USER={{ pillar['concourse_runas_user'] }}

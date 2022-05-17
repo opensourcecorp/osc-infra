@@ -11,5 +11,5 @@ module "aws_vpc" {
 
   custom_tags    = var.custom_tags
   is_osc_core    = true
-  source_address = "https://github.com/opensourcecorp/gaia.git"
+  source_address = "https://github.com/opensourcecorp/infracode.git"
 }

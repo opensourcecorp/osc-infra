@@ -45,7 +45,7 @@ source "amazon-ebs" "main" {
 
   source_ami_filter {
     filters = {
-      # Ymir & ... start from Debian base, others start from Ymir (or another base from Ymir)
+      # imgbuilder & ... start from Debian base, others start from imgbuilder (or another base from imgbuilder)
       name             = local.source_ami_name_pattern
       root-device-type = "ebs"
       virtualization-type = "hvm"
@@ -139,7 +139,7 @@ source "proxmox-iso" "main" {
 }
 
 source "proxmox-clone" "main" {
-  # This expects the clone/start point to be done off of Ymir's premade VM template
+  # This expects the clone/start point to be done off of imgbuilder's premade VM template
   clone_vm = replace(local.vm_name, var.app_name, "imgbuilder")
   cpu_type = "host"
   # disks {
@@ -223,7 +223,7 @@ build {
   ]
 
   # Make a no-root-needed staging area for uploaded source files/directories,
-  # and then copy them up -- first Ymir's common files, and then any optional
+  # and then copy them up -- first imgbuilder's common files, and then any optional
   # other ones provided by apps
   provisioner "shell" {
     execute_command = local.execute_command
@@ -256,7 +256,7 @@ build {
     only = ["virtualbox-iso.main", "virtualbox-ovf.main"]
   }
 
-  # Run the build script provided by Ymir
+  # Run the build script provided by imgbuilder
   provisioner "shell" {
     environment_vars = [
       "app_name=${var.app_name}",

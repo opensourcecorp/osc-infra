@@ -27,7 +27,7 @@ download_zulip_installer:
         --no-init-db
   - creates: /tmp/zulip-server-latest.tar.gz
 
-  # Zulip will remove the redundant need to do this in the future
+# Zulip will remove the redundant need to do this in the future
 stop_local_postgres:
   cmd.run:
   - name: |

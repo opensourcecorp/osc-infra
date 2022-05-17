@@ -10,7 +10,6 @@ base:
   - datastore.secret
   - comms.secret
   - cicd.secret
-  - ociregistry.secret
   - sourcecode.secret
   - terraform_backends.secret
 
@@ -36,7 +35,6 @@ base:
 
   'ociregistry*':
   - ociregistry._core
-  - ociregistry.secret
 
   'sourcecode*':
   - sourcecode._core

@@ -1,4 +1,4 @@
-gaia
+infracode
 ====
 
 She lay with Heaven and bore the Titans
@@ -13,7 +13,7 @@ Gaia is home to two features:
 
 * Terraform modules that other projects can use to deploy into OSC.
 
-* Module calls to itself to deploy OSC's core infrastructure. See the `gaia/`
+* Module calls to itself to deploy OSC's core infrastructure. See the `infracode/`
   subdirectory for more details & examples.
 
 OpenSourceCorp aims to target multiple platforms (with a preference towards
@@ -24,15 +24,15 @@ you will find grouped under the `providers/` subdirectory.
 How to use
 ----------
 
-In your own repository, provide a `gaia` module address as your module `source`,
+In your own repository, provide a `infracode` module address as your module `source`,
 *[noting the two slashes](https://www.terraform.io/docs/language/modules/sources.html#modules-in-package-sub-directories)*:
 
-    source = https://github.com/opensourcecorp/osc-infra//gaia/providers/<provider>/<module_name>
+    source = https://github.com/opensourcecorp/osc-infra//infracode/providers/<provider>/<module_name>
 
 Where `<provider>` is the name of the provider, and `<module_name>` is the name
 of the module itself within that provider. For example, to use Gaia's AWS EC2
 instance module, you might provide that `source` as:
 
     module "ec2_instance" {
-      source = https://github.com/opensourcecorp/osc-infra//gaia/providers/aws/ec2_instance
+      source = https://github.com/opensourcecorp/osc-infra//infracode/providers/aws/ec2_instance
     }

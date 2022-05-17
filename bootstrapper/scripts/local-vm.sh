@@ -44,22 +44,22 @@ export PKR_VAR_headless=true
 # BIG OL' LOOP
 while read -r subsystem; do
 
-  # Build the Ymir base image if it doesn't exist (and if we haven't already
+  # Build the imgbuilder base image if it doesn't exist (and if we haven't already
   # checked in this loop)
   if [[ "${subsystem}" == 'imgbuilder' ]]; then
     if [[ ! -d "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/ ]]; then
-      printf 'Ymir base image output directory not found; creating Ymir base image\n'
+      printf 'imgbuilder base image output directory not found; creating imgbuilder base image\n'
       make -C "${OSC_ROOT}"/imgbuilder vagrant-box \
         app_name=imgbuilder \
         var_file="${OSC_ROOT}"/imgbuilder/imgbuildervars/virtualbox-iso.pkrvars.hcl \
         only=virtualbox-iso.main
     else
-      printf 'Ymir base image output directory found; skipping build\n'
+      printf 'imgbuilder base image output directory found; skipping build\n'
       printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/
     fi
   fi
 
-  # Build the other images from Ymir's OVF build output, if they don't exist
+  # Build the other images from imgbuilder's OVF build output, if they don't exist
   if [[ "${subsystem}" != 'imgbuilder' ]]; then
     if [[ ! -d "${OSC_ROOT}/imgbuilder/output-virtualbox-ovf-${subsystem}/" ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
@@ -112,7 +112,7 @@ if vagrant status cicd-worker-1 > /dev/null 2>&1 ; then # run cicd test(s)
   printf 'Log in to web console at localhost:8081 using the user/pass at configmgmt/salt/pillar/cicd/secret.sls.\n'
   printf 'fly CLI utility left in current directory.\n'
 
-  printf 'Running a dummy Gnar pipeline to give you something to see in the console, and to test interconnectivity\n'
+  printf 'Running a dummy cicd pipeline to give you something to see in the console, and to test interconnectivity\n'
   cat <<EOF > /tmp/hello-osc.yaml
 ---
 jobs:

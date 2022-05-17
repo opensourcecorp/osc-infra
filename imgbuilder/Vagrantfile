@@ -1,4 +1,4 @@
-# Ymir's VM by itself isn't really anything special, but you can use this
+# imgbuilder's VM by itself isn't really anything special, but you can use this
 # Vagrantfile to try out ad-hoc VM stuff for potential net-new platforms
 
 # For root Vagrantfile to keep paths consistent; use in place of '.' in paths

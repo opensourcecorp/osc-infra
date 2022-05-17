@@ -1,7 +1,7 @@
 locals {
   default_tags = {
     "osc:core"        = var.is_osc_core ? "true" : "false"
-    module_source     = "https://github.com/opensourcecorp/gaia//providers/aws/vpc"
+    module_source     = "https://github.com/opensourcecorp/infracode//providers/aws/vpc"
     deployment_source = var.source_address
   }
 

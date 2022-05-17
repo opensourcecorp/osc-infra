@@ -6,26 +6,26 @@ manages a [SaltStack](https://docs.saltproject.io) deployment under the hood,
 and so also stores all non-sensitive Salt States/Pillar data
 (`salt/{salt,pillar}/`) for VM-bound services across OpenSourceCorp.
 
-Aether also manages its *own* configuration once it boots, by setting itself as
+configmgmt also manages its *own* configuration once it boots, by setting itself as
 a client of its own server on `localhost`.
 
 How to deploy
 -------------
 
-Aether machine images are created via the [Ymir](../imgbuilder) framework, just like
+configmgmt machine images are created via the [imgbuilder](../imgbuilder) framework, just like
 other OSC platforms.
 
-The easiest way to get Aether (and the rest of the OSC platform stack) up &
+The easiest way to get configmgmt (and the rest of the OSC platform stack) up &
 running for development/testing is to use the [OSC local infra
 bootstrapper](../bootstrapper).
 
-For production deployments, refer to the `gaia/` subdirectory for IaC
+For production deployments, refer to the `infracode/` subdirectory for IaC
 configurations/scripts.
 
 How to add a new application
 ----------------------------
 
-To add a new application/platform to Aether, take the following steps:
+To add a new application/platform to configmgmt, take the following steps:
 
 1. Create two new subfolders with an empty `_core.sls` file in each, i.e.
    `salt/salt/<app_name>/_core.sls` and `salt/pillar/<app_name>/_core.sls`.
@@ -46,7 +46,7 @@ To add a new application/platform to Aether, take the following steps:
 
 1. Add a file named `salt/salt/netsvc/<app_name>.hcl`. Even if your app doesn't
    expose ports for other services to talk on, this file is needed to register
-   the image's nodes with Faro for cluster membership.
+   the image's nodes with netsvc for cluster membership.
 
 1. Edit (in alphabetical order, please) the `salt/{salt,pillar}/top.sls` files
    to allow access for your app to those files you just created.
@@ -64,11 +64,11 @@ Developer notes
 
   which wipes the Salt Master's public key from the Minion. Salt will throw an
   error if the pubkey on the Minion doesn't match the one on the Master. This
-  can happen if the Aether node is updated while the other nodes are still
+  can happen if the configmgmt node is updated while the other nodes are still
   running (and this ***will*** happen IRL). Until OSC has a reliable place to
   store static Salt keys for preseeding to all nodes -- Master & Minion alike --
   this is how to keep things moving.
 
   In real scenarios, this is a big security risk since the targeted Salt Master
-  could not be an Aether node at all, but some impersonating node that could
+  could not be an configmgmt node at all, but some impersonating node that could
   deliver malicious software to any Minion making a `salt-call` request.

@@ -41,7 +41,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_configmgmt_address"></a> [configmgmt\_address](#input\_configmgmt\_address) | IP or DNS name of Aether | `string` | `"configmgmt.service.consul"` | no |
+| <a name="input_configmgmt_address"></a> [configmgmt\_address](#input\_configmgmt\_address) | IP or DNS name of configmgmt | `string` | `"configmgmt.service.consul"` | no |
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Friendly name of application/platform being built | `string` | n/a | yes |
 | <a name="input_desired_private_ip"></a> [desired\_private\_ip](#input\_desired\_private\_ip) | Desired private IP to associate to the instance. Must also specify use\_static\_ip = true | `string` | `""` | no |
 | <a name="input_instance_profile_name"></a> [instance\_profile\_name](#input\_instance\_profile\_name) | Name of the IAM Instance Profile to attach to the instance | `string` | `""` | no |

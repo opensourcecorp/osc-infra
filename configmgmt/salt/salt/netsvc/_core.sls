@@ -1,4 +1,4 @@
-# Faro needs the Consul Client to be disabled before the Server can start succesfully
+# netsvc needs the Consul Client to be disabled before the Server can start succesfully
 disable_consul_client:
   cmd.run:
   - name: |
@@ -18,7 +18,7 @@ enable_consul_server_agent:
   - replace: true
   - contents: |
       [Unit]
-      Description=Faro Consul Server Agent
+      Description=netsvc Consul Server Agent
 
       [Service]
       User=root

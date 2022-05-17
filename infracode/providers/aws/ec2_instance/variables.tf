@@ -5,7 +5,7 @@ locals {
 
   default_tags = {
     "osc:core"        = var.is_osc_core ? "true" : "false"
-    module_source     = "https://github.com/opensourcecorp/gaia//providers/aws/ec2_instance"
+    module_source     = "https://github.com/opensourcecorp/infracode//providers/aws/ec2_instance"
     deployment_source = var.source_address
   }
 }
@@ -16,7 +16,7 @@ variable "app_name" {
 }
 
 variable "configmgmt_address" {
-  description = "IP or DNS name of Aether"
+  description = "IP or DNS name of configmgmt"
   type        = string
   default     = "configmgmt.service.consul"
 }

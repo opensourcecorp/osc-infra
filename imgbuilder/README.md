@@ -2,7 +2,7 @@ imgbuilder
 ====
 
 <!-- markdownlint-disable MD033 -->
-*Out of Ymir's flesh was fashioned the earth,<br>
+*Out of imgbuilder's flesh was fashioned the earth,<br>
 And the mountains were made of his bones,<br>
 The sky from the frost cold giant's skull,<br>
 And the ocean out of his blood*
@@ -31,7 +31,7 @@ need the following:
   configurations)
 
 If you want to develop locally (and you should!), you will also need a supported
-virtalization platform. Currently, Ymir is written to only target Oracle VM
+virtalization platform. Currently, imgbuilder is written to only target Oracle VM
 VirtualBox (via the `virtualbox-iso` builder) as that virtualization platform,
 since Vagrant does not support QEMU/KVM out of the box.
 
@@ -51,11 +51,11 @@ like this:
 You can of course have any other files or directories in your codebase, but
 these are the ones `imgbuilder` needs. Any files/directories your app/platform needs
 to build successfully can be provided via the `source_files` Packer variable.
-Otherwise, Ymir has an implicit assumption that you will perform provisioning
-via [Aether](../configmgmt) configuration management -- though this is recommended,
+Otherwise, imgbuilder has an implicit assumption that you will perform provisioning
+via [configmgmt](../configmgmt) configuration management -- though this is recommended,
 not required. Specifically, if you want to run your own longer shell scripts
 that you don't want to fit into the `shell_provisioner` variable, you should
-have a top-level `scripts/` directory, and Ymir will try to run `shellcheck`
+have a top-level `scripts/` directory, and imgbuilder will try to run `shellcheck`
 against the contents at build-time.
 
 More details about the files above:
