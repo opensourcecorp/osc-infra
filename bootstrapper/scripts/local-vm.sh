@@ -46,48 +46,48 @@ while read -r subsystem; do
 
   # Build the Ymir base image if it doesn't exist (and if we haven't already
   # checked in this loop)
-  if [[ "${subsystem}" == 'ymir' ]]; then
-    if [[ ! -d "${OSC_ROOT}"/ymir/output-virtualbox-iso-ymir/ ]]; then
+  if [[ "${subsystem}" == 'imgbuilder' ]]; then
+    if [[ ! -d "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/ ]]; then
       printf 'Ymir base image output directory not found; creating Ymir base image\n'
-      make -C "${OSC_ROOT}"/ymir vagrant-box \
-        app_name=ymir \
-        var_file="${OSC_ROOT}"/ymir/ymirvars/virtualbox-iso.pkrvars.hcl \
+      make -C "${OSC_ROOT}"/imgbuilder vagrant-box \
+        app_name=imgbuilder \
+        var_file="${OSC_ROOT}"/imgbuilder/imgbuildervars/virtualbox-iso.pkrvars.hcl \
         only=virtualbox-iso.main
     else
       printf 'Ymir base image output directory found; skipping build\n'
-      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/ymir/output-virtualbox-iso-ymir/
+      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/
     fi
   fi
 
   # Build the other images from Ymir's OVF build output, if they don't exist
-  if [[ "${subsystem}" != 'ymir' ]]; then
-    if [[ ! -d "${OSC_ROOT}/ymir/output-virtualbox-ovf-${subsystem}/" ]]; then
+  if [[ "${subsystem}" != 'imgbuilder' ]]; then
+    if [[ ! -d "${OSC_ROOT}/imgbuilder/output-virtualbox-ovf-${subsystem}/" ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${subsystem}" != 'aether' ]] ; then
-        vagrant up aether
-        if [[ "${subsystem}" != 'faro' ]] ; then
-          vagrant up faro
-          if [[ "${subsystem}" != 'chonk' ]] ; then
-            vagrant up chonk chonk-replica
+      if [[ "${subsystem}" != 'configmgmt' ]] ; then
+        vagrant up configmgmt
+        if [[ "${subsystem}" != 'netsvc' ]] ; then
+          vagrant up netsvc
+          if [[ "${subsystem}" != 'datastore' ]] ; then
+            vagrant up datastore datastore-replica
           fi
         fi
       fi
-      # Symlink ymir's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${subsystem}"/ymir-local
-      make -C "${OSC_ROOT}/${subsystem}"/ymir-local vagrant-box \
+      # Symlink imgbuilder's framework to each repo to build from
+      ln -fs "${OSC_ROOT}"/imgbuilder "${OSC_ROOT}/${subsystem}"/imgbuilder-local
+      make -C "${OSC_ROOT}/${subsystem}"/imgbuilder-local vagrant-box \
         app_name="${subsystem}" \
-        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/ymirvars/virtualbox-ovf.pkrvars.hcl)" \
+        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/imgbuildervars/virtualbox-ovf.pkrvars.hcl)" \
         only=virtualbox-ovf.main
     else
       printf '%s base image output directory found; skipping build\n' "${subsystem}"
-      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/ymir/output-virtualbox-iso-"${subsystem}"/
+      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-"${subsystem}"/
     fi
   fi
 
-  # TODO: For some reason, ymir symlinks to itself, and it's NOT called
-  # 'ymir-local' like the others. So clean up here. I'm literally pulling my
+  # TODO: For some reason, imgbuilder symlinks to itself, and it's NOT called
+  # 'imgbuilder-local' like the others. So clean up here. I'm literally pulling my
   # hair out trying to find out how/where in the world this happens
-  [[ -L "${OSC_ROOT}"/ymir/ymir ]] && rm "${OSC_ROOT}"/ymir/ymir
+  [[ -L "${OSC_ROOT}"/imgbuilder/imgbuilder ]] && rm "${OSC_ROOT}"/imgbuilder/imgbuilder
 
 done < ./subsystems.txt
 
@@ -96,20 +96,20 @@ vagrant up
 
 ### TESTS
 
-if vagrant status gnar-worker-1 > /dev/null 2>&1 ; then # run gnar test(s)
+if vagrant status cicd-worker-1 > /dev/null 2>&1 ; then # run cicd test(s)
 
-  # Grab the fly CLI from gnar (Concourse CI), and log in
+  # Grab the fly CLI from cicd (Concourse CI), and log in
   if [[ ! -f ./fly ]]; then
     curl -fsSL -q -o ./fly 'http://localhost:8081/api/v1/cli?arch=amd64&platform=linux'
   fi
   chmod +x ./fly
 
-  gnar_user=$(awk '/concourse_local_user/ { print $2 }' "${OSC_ROOT}"/aether/salt/pillar/gnar/secret.sls)
-  gnar_pass=$(awk '/concourse_local_password/ { print $2 }' "${OSC_ROOT}"/aether/salt/pillar/gnar/secret.sls)
-  ./fly -t main login -u "${gnar_user}" -p "${gnar_pass}" -c http://localhost:8081 > /dev/null
+  cicd_user=$(awk '/concourse_local_user/ { print $2 }' "${OSC_ROOT}"/configmgmt/salt/pillar/cicd/secret.sls)
+  cicd_pass=$(awk '/concourse_local_password/ { print $2 }' "${OSC_ROOT}"/configmgmt/salt/pillar/cicd/secret.sls)
+  ./fly -t main login -u "${cicd_user}" -p "${cicd_pass}" -c http://localhost:8081 > /dev/null
   ./fly -t main sync
-  printf '\nSuccessfully logged in to gnar (via the fly CLI from Concourse CI).\n'
-  printf 'Log in to web console at localhost:8081 using the user/pass at aether/salt/pillar/gnar/secret.sls.\n'
+  printf '\nSuccessfully logged in to cicd (via the fly CLI from Concourse CI).\n'
+  printf 'Log in to web console at localhost:8081 using the user/pass at configmgmt/salt/pillar/cicd/secret.sls.\n'
   printf 'fly CLI utility left in current directory.\n'
 
   printf 'Running a dummy Gnar pipeline to give you something to see in the console, and to test interconnectivity\n'
@@ -124,7 +124,7 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: photobook.service.consul/mirrors/alpine
+          repository: ociregistry.service.consul/mirrors/alpine
           tag: latest
       run:
         path: echo

@@ -1,8 +1,8 @@
 .vagrant*
 *.auto.tfvars
-ymir-local*
+imgbuilder-local*
 
-# fly CLI from gnar/Concourse
+# fly CLI from cicd/Concourse
 fly*
 
 # Log files

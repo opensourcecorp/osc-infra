@@ -17,11 +17,11 @@ table*** are to be considered work-in-progress, and not in active use yet.
 | Subsystem Name                 | Subsystem Description/Purpose
 | --------------                 | -----------------------------
 | [bootstrapper](./bootstrapper) | Bootstrapping utility for subsytems
-| [ymir](./ymir)                 | Machine-image builder framework
-| [aether](./aether)             | Configuration management subsystem for images built by [ymir](./ymir)
-| [faro](./faro)                 | Service discovery, DNS stubbing
-| [chonk](./chonk)               | Common storage (RDBMS, cache, etc)
-| [sauce](./sauce)               | Source-code management
-| [photobook](./photobook)       | OCI image registry
-| [gnar](./gnar)                 | CI/CD
+| [imgbuilder](./imgbuilder)                 | Machine-image builder framework
+| [configmgmt](./configmgmt)             | Configuration management subsystem for images built by [imgbuilder](./imgbuilder)
+| [netsvc](./netsvc)                 | Service discovery, DNS stubbing
+| [datastore](./datastore)               | Common storage (RDBMS, cache, etc)
+| [sourcecode](./sourcecode)               | Source-code management
+| [ociregistry](./ociregistry)       | OCI image registry
+| [cicd](./cicd)                 | CI/CD
 | [gaia](./gaia)                 | Infrastructure-as-code modules

@@ -1,0 +1,7 @@
+.vagrant*
+concourse*
+fly
+vars/*
+!vars/vagrant-vbox
+
+imgbuilder-local*

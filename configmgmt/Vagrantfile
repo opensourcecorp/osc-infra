@@ -1,0 +1,42 @@
+# This Vagrantfile is used to stand up a local Aether master, for the purpose of
+# debugging the image build, but more importantly to provide a master node for
+# other local image builds to use for their configuration.
+
+# For root Vagrantfile to keep paths consistent; use in place of '.' in paths
+here = File.dirname(__FILE__)
+
+Vagrant.configure("2") do |config|
+  box = "configmgmt"
+  username = "packer"
+  password = "packer"
+
+  num_masters = 1
+
+  config.ssh.username = username
+  config.ssh.password = password
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus   = 1
+    vb.memory = 1024
+  end
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define "configmgmt" do |configmgmt|
+    configmgmt.vm.box = box
+    configmgmt.vm.network "private_network", ip: "10.0.1.10" # needs to be static
+    configmgmt.vm.network "forwarded_port", guest: 4505, host: 4505
+    configmgmt.vm.network "forwarded_port", guest: 4506, host: 4506
+    configmgmt.vm.synced_folder "#{here}", "/vagrant", disabled: true
+    configmgmt.vm.synced_folder "#{here}/salt/salt/", "/srv/salt"
+    configmgmt.vm.synced_folder "#{here}/salt/pillar/", "/srv/pillar"
+    configmgmt.vm.provision "shell",
+      inline: <<-SCRIPT
+        export app_name='configmgmt'
+        export configmgmt_address='127.0.0.1'
+        bash /usr/local/imgbuilder/scripts/run/main.sh
+      SCRIPT
+  end
+end

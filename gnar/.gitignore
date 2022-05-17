@@ -1,7 +1,0 @@
-.vagrant*
-concourse*
-fly
-vars/*
-!vars/vagrant-vbox
-
-ymir-local*
