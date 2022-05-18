@@ -8,13 +8,12 @@ resource "aws_spot_instance_request" "main" {
   spot_type                      = "persistent"
   wait_for_fulfillment           = true
 
-  ami                    = data.aws_ami.latest.id
-  iam_instance_profile   = var.instance_profile_name != "" ? var.instance_profile_name : null
-  instance_type          = var.instance_type
-  key_name               = var.keypair_name != "" ? var.keypair_name : null
-  subnet_id              = var.use_static_ip ? null : local.subnet_id
-  # user_data              = var.user_data_filepath != "" ? file(var.user_data_filepath) : var.user_data_string
-  user_data = <<-EOF
+  ami                  = data.aws_ami.latest.id
+  iam_instance_profile = var.instance_profile_name != "" ? var.instance_profile_name : null
+  instance_type        = var.instance_type
+  key_name             = var.keypair_name != "" ? var.keypair_name : null
+  subnet_id            = var.use_static_ip ? null : local.subnet_id
+  user_data            = <<-EOF
     #!/usr/bin/env bash
     export configmgmt_address=${var.configmgmt_address}
     export app_name=${var.app_name}

@@ -9,13 +9,13 @@ module "ec2" {
   # source = "github.com/opensourcecorp/infracode//providers/aws/ec2_instance"
   source = "../../infracode/providers/aws/ec2_instance"
 
-  app_name           = var.app_name
-  instance_type      = "t3a.micro"
-  is_osc_core        = true
-  keypair_name       = var.keypair_name
-  name_tag           = var.app_name
-  source_address     = "https://github.com/opensourcecorp/${var.app_name}.git"
-  source_ami_filter  = "*${var.app_name}*"
+  app_name          = var.app_name
+  instance_type     = "t3a.micro"
+  is_osc_core       = true
+  keypair_name      = var.keypair_name
+  name_tag          = var.app_name
+  source_address    = "https://github.com/opensourcecorp/${var.app_name}.git"
+  source_ami_filter = "*${var.app_name}*"
 
   desired_private_ip = "10.0.1.11"
   subnet_cidr_filter = "10.0.1.0/24"
@@ -23,48 +23,48 @@ module "ec2" {
 
   sg_rules_maplist = [
     {
-      port = 8300
-      protocol = "tcp"
+      port        = 8300
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8301
-      protocol = "tcp"
+      port        = 8301
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8301
-      protocol = "udp"
+      port        = 8301
+      protocol    = "udp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8302
-      protocol = "tcp"
+      port        = 8302
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8302
-      protocol = "udp"
+      port        = 8302
+      protocol    = "udp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8500
-      protocol = "tcp"
+      port        = 8500
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8501
-      protocol = "tcp"
+      port        = 8501
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8502
-      protocol = "tcp"
+      port        = 8502
+      protocol    = "tcp"
       cidr_blocks = ["10.0.0.0/16"]
     },
     {
-      port = 8600
-      protocol = "udp"
+      port        = 8600
+      protocol    = "udp"
       cidr_blocks = ["10.0.0.0/16"]
     }
   ]

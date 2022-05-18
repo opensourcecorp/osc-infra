@@ -25,3 +25,4 @@ table*** are to be considered work-in-progress, and not in active use yet.
 | [ociregistry](./ociregistry)   | OCI image registry
 | [cicd](./cicd)                 | CI/CD
 | [infracode](./infracode)       | Infrastructure-as-code modules
+| [website](./website)           | Public website content & web server

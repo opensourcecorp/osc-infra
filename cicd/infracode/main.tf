@@ -10,13 +10,13 @@ module "web" {
   # source = "github.com/opensourcecorp/infracode//providers/aws/ec2_instance"
   source = "../../infracode/providers/aws/ec2_instance"
 
-  app_name           = var.app_name
-  instance_type      = "t3a.micro"
-  is_osc_core        = true
-  keypair_name       = var.keypair_name
-  name_tag           = "${var.app_name}-web"
-  source_address     = "https://github.com/opensourcecorp/${var.app_name}.git"
-  source_ami_filter  = "*${var.app_name}-web*"
+  app_name          = var.app_name
+  instance_type     = "t3a.micro"
+  is_osc_core       = true
+  keypair_name      = var.keypair_name
+  name_tag          = "${var.app_name}-web"
+  source_address    = "https://github.com/opensourcecorp/${var.app_name}.git"
+  source_ami_filter = "*${var.app_name}-web*"
 
   sg_rules_maplist = [
     {
@@ -37,13 +37,13 @@ module "worker" {
   # source = "github.com/opensourcecorp/infracode//providers/aws/ec2_instance"
   source = "../../infracode/providers/aws/ec2_instance"
 
-  app_name           = var.app_name
-  instance_type      = "t3a.micro"
-  is_osc_core        = true
-  keypair_name       = var.keypair_name
-  name_tag           = "${var.app_name}-worker"
-  source_address     = "https://github.com/opensourcecorp/${var.app_name}.git"
-  source_ami_filter  = "*${var.app_name}-worker*"
+  app_name          = var.app_name
+  instance_type     = "t3a.micro"
+  is_osc_core       = true
+  keypair_name      = var.keypair_name
+  name_tag          = "${var.app_name}-worker"
+  source_address    = "https://github.com/opensourcecorp/${var.app_name}.git"
+  source_ami_filter = "*${var.app_name}-worker*"
 
   # subnet_name_filter = "osc-private"
 }
