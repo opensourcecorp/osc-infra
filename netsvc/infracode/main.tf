@@ -6,8 +6,8 @@ variable "app_name" {}
 variable "keypair_name" {}
 
 module "ec2" {
-  # source = "github.com/opensourcecorp/infracode//providers/aws/ec2_instance"
-  source = "../../infracode/providers/aws/ec2_instance"
+  # source = "github.com/opensourcecorp/osc-infra//infracode/providers/aws/ec2_instance"
+  source = "../../osc-infra/infracode/providers/aws/ec2_instance"
 
   app_name          = var.app_name
   instance_type     = "t3a.micro"
