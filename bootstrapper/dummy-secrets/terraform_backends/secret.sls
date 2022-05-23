@@ -1,42 +1,27 @@
 # U BETTER NOT USE THESE IRL
 terraform_backends:
-  aether:
+  configmgmt:
     pg:
-      dbname: terraform_backend_aether
-      dbuser: tf_user_aether
+      dbname: terraform_backend_configmgmt
+      dbuser: tf_user_configmgmt
       dbpass: passwd
-  atlas:
+  datastore:
     pg:
-      dbname: terraform_backend_atlas
-      dbuser: tf_user_atlas
+      dbname: terraform_backend_datastore
+      dbuser: tf_user_datastore
       dbpass: passwd
-  chonk:
+  cicd:
     pg:
-      dbname: terraform_backend_chonk
-      dbuser: tf_user_chonk
+      dbname: terraform_backend_cicd
+      dbuser: tf_user_cicd
       dbpass: passwd
-  gnar:
+  monitor:
     pg:
-      dbname: terraform_backend_gnar
-      dbuser: tf_user_gnar
+      dbname: terraform_backend_monitor
+      dbuser: tf_user_monitor
       dbpass: passwd
-  nurse:
+  sourcecode:
     pg:
-      dbname: terraform_backend_nurse
-      dbuser: tf_user_nurse
-      dbpass: passwd
-  padl:
-    pg:
-      dbname: terraform_backend_padl
-      dbuser: tf_user_padl
-      dbpass: passwd
-  photobook:
-    pg:
-      dbname: terraform_backend_photobook
-      dbuser: tf_user_photobook
-      dbpass: passwd
-  sauce:
-    pg:
-      dbname: terraform_backend_sauce
-      dbuser: tf_user_sauce
+      dbname: terraform_backend_sourcecode
+      dbuser: tf_user_sourcecode
       dbpass: passwd

@@ -18,7 +18,7 @@ required_tools=(
 check-required-tools "${required_tools[@]}"
 
 # May also need Gaia, if modules are referencing a local dev version of it
-repo-clone gaia
+repo-clone infracode
 
 for awsfile in config credentials; do
   if [[ ! -f "${HOME}"/.aws/"${awsfile}" ]]; then
@@ -30,40 +30,40 @@ check-errors
 # BIG OL' LOOP
 if [[ "${instruction:-down}" == 'up' ]]; then
 
-  # Build the Ymir base
+  # Build the imgbuilder base
   export PKV_VAR_shared_credentials_file="${HOME}/.aws/credentials"
-  make -C "${OSC_ROOT}"/ymir build \
-    app_name=ymir \
-    var_file="$(realpath "${OSC_ROOT}"/ymir/ymirvars/amazon-ebs.pkrvars.hcl)" \
+  make -C "${OSC_ROOT}"/imgbuilder build \
+    app_name=imgbuilder \
+    var_file="$(realpath "${OSC_ROOT}"/imgbuilder/imgbuildervars/amazon-ebs.pkrvars.hcl)" \
     only=amazon-ebs.main
 
   # BUILD
   while read -r subsystem; do
 
-    # Build the other images from Ymir's AMI build output
-    if [[ "${subsystem}" != 'ymir' ]]; then
+    # Build the other images from imgbuilder's AMI build output
+    if [[ "${subsystem}" != 'imgbuilder' ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${subsystem}" != 'aether' ]] ; then
-        aws-up aether
-        if [[ "${subsystem}" != 'faro' ]] ; then
-          aws-up faro
-          if [[ "${subsystem}" != 'chonk' ]] ; then
-            aws-up chonk
+      if [[ "${subsystem}" != 'configmgmt' ]] ; then
+        aws-up configmgmt
+        if [[ "${subsystem}" != 'netsvc' ]] ; then
+          aws-up netsvc
+          if [[ "${subsystem}" != 'datastore' ]] ; then
+            aws-up datastore
           fi
         fi
       fi
-      # Symlink ymir's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/ymir "${OSC_ROOT}/${subsystem}"/ymir-local
-      make -C "${OSC_ROOT}/${subsystem}"/ymir-local build \
+      # Symlink imgbuilder's framework to each repo to build from
+      ln -fs "${OSC_ROOT}"/imgbuilder "${OSC_ROOT}/${subsystem}"/imgbuilder-local
+      make -C "${OSC_ROOT}/${subsystem}"/imgbuilder-local build \
         app_name="${subsystem}" \
-        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/ymirvars/amazon-ebs.pkrvars.hcl)" \
+        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/imgbuildervars/amazon-ebs.pkrvars.hcl)" \
         only=amazon-ebs.main
     fi
 
-    # TODO: For some reason, ymir symlinks to itself, and it's NOT called
-    # 'ymir-local' like the others. So clean up here. I'm literally pulling my
+    # TODO: For some reason, imgbuilder symlinks to itself, and it's NOT called
+    # 'imgbuilder-local' like the others. So clean up here. I'm literally pulling my
     # hair out trying to find out how/where in the world this happens
-    [[ -L "${OSC_ROOT}"/ymir/ymir ]] && rm "${OSC_ROOT}"/ymir/ymir
+    [[ -L "${OSC_ROOT}"/imgbuilder/imgbuilder ]] && rm "${OSC_ROOT}"/imgbuilder/imgbuilder
 
   done < ./subsystems.txt
 

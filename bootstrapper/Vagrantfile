@@ -22,12 +22,12 @@ end
 # comma-separated string of subsystem names. The earlier the subsystem shows up
 # in the list, the more important it is for downstream subsystems
 core_subsystems = [
-  "aether", # need always
-  "faro", # need always
-  "chonk", # need for most
-  # "sauce", # needs chonk, but only at use-time, not boot-time
-  # "photobook", # needs chonk
-  # "gnar" # needs photobook
+  "configmgmt", # need always
+  "netsvc", # need always
+  "datastore", # need for most
+  # "sourcecode", # needs datastore, but only at use-time, not boot-time
+  # "ociregistry", # needs datastore
+  # "cicd" # needs ociregistry
 ]
 if ENV['OSC_SUBSYSTEMS'].nil?
   puts "Environment variable OSC_SUBSYSTEMS is unset, so starting core subsystems only:"

@@ -32,14 +32,14 @@ check-required-tools() {
   check-errors
 }
 
-# Adds dummy secret SLS files to Aether's repo, so all the services needing
+# Adds dummy secret SLS files to configmgmt's repo, so all the services needing
 # secrets can start.
-add-aether-dummy-secrets() {
-  printf 'Checking for any missing, needed, dummy secrets for services to Aether so they can start\n'
+add-configmgmt-dummy-secrets() {
+  printf 'Checking for any missing, needed, dummy secrets for services to configmgmt so they can start\n'
   printf "!!! YOU BETTER CHANGE THESE IF YOU DEPLOY THIS STUFF FOR REAL, OBVIOUSLY !!!\n"
   find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-dummy-secrets
   while read -r secrets_file; do
-    secrets_file_path="${OSC_ROOT}/aether/salt/pillar/${secrets_file}"
+    secrets_file_path="${OSC_ROOT}/configmgmt/salt/pillar/${secrets_file}"
     if [[ ! -f "${secrets_file_path}" ]]; then
       printf 'Adding %s\n' "${secrets_file_path}"
       cp dummy-secrets/"${secrets_file}" "${secrets_file_path}" || {
@@ -52,10 +52,10 @@ add-aether-dummy-secrets() {
 }
 
 add-tls-ca-cert() {
-  if [[ ! -f "${OSC_ROOT}"/aether/salt/salt/osc-ca.pub ]] && [[ ! -f "${OSC_ROOT}"/aether/salt/salt/osc-ca.key ]]; then
+  if [[ ! -f "${OSC_ROOT}"/configmgmt/salt/salt/osc-ca.pub ]] && [[ ! -f "${OSC_ROOT}"/configmgmt/salt/salt/osc-ca.key ]]; then
     printf 'Generating Root CA files for TLS certs...\n'
     openssl genrsa \
-      -out "${OSC_ROOT}"/aether/salt/salt/osc-ca.key \
+      -out "${OSC_ROOT}"/configmgmt/salt/salt/osc-ca.key \
       4096
     openssl req \
       -x509 \
@@ -64,8 +64,8 @@ add-tls-ca-cert() {
       -sha256 \
       -days 1825 \
       -subj '/C=US/ST=MO/L=Any/O=OpenSourceCorp/OU=Root/CN=OpenSourceCorp/emailAddress=admin@opensourcecorp.org' \
-      -key "${OSC_ROOT}"/aether/salt/salt/osc-ca.key \
-      -out "${OSC_ROOT}"/aether/salt/salt/osc-ca.pub
+      -key "${OSC_ROOT}"/configmgmt/salt/salt/osc-ca.key \
+      -out "${OSC_ROOT}"/configmgmt/salt/salt/osc-ca.pub
   fi
 
   check-errors
@@ -74,22 +74,22 @@ add-tls-ca-cert() {
 ### AWS
 aws-up() {
   platform="$1"
-  if [[ "${platform}" == 'ymir' ]]; then
-    printf 'Ymir has no launch candidate; skipping\n'
+  if [[ "${platform}" == 'imgbuilder' ]]; then
+    printf 'imgbuilder has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/infracode || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform apply -var-file=aws.tfvars -auto-approve
 }
 
 aws-down() {
   platform="$1"
-  if [[ "${platform}" == 'ymir' ]]; then
-    printf 'Ymir has no launch candidate; skipping\n'
+  if [[ "${platform}" == 'imgbuilder' ]]; then
+    printf 'imgbuilder has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_ROOT}"/"${platform}"/gaia || exit 1
+  cd "${OSC_ROOT}"/"${platform}"/infracode || exit 1
   terraform init -backend-config=backend-s3.tfvars
   terraform destroy -var-file=aws.tfvars -auto-approve
 }

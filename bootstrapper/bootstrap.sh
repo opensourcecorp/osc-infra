@@ -27,7 +27,7 @@ fi
 export PACKER_CACHE_DIR="${OSC_ROOT}/.packer.d/packer_cache"
 
 # Populate dummy secrets if they don't exist
-add-aether-dummy-secrets
+add-configmgmt-dummy-secrets
 
 # OSC needs a keypair to act as a local cert authority (CA)
 add-tls-ca-cert

@@ -1,7 +1,7 @@
-ymir
-aether
-faro
-chonk
-sauce
-photobook
-gnar
+imgbuilder
+configmgmt
+netsvc
+datastore
+sourcecode
+ociregistry
+cicd

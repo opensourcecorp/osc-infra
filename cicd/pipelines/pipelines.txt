@@ -1,0 +1,4 @@
+# configmgmt       https://github.com/opensourcecorp/configmgmt.git       main
+# netsvc         https://github.com/opensourcecorp/netsvc.git         main
+# datastore        https://github.com/opensourcecorp/datastore.git        main
+ghostwriter  https://github.com/opensourcecorp/ghostwriter.git  main

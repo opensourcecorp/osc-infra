@@ -1,3 +1,0 @@
-vars/*
-!vars/vagrant-vbox
-.vagrant*

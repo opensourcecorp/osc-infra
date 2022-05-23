@@ -2,8 +2,8 @@
 
 This repository serves as the monorepo that manages all core infrastructure
 subsystems for [OpenSourceCorp](https://opensourcecorp.org). Each subdirectory
-should contain a `README.md` with its own documentation. A Directory table is
-below as a high-level reference.
+should contain a `README.md` with its own documentation as needed. A Directory
+table is provided below as a high-level reference.
 
 ## Directory
 
@@ -17,11 +17,12 @@ table*** are to be considered work-in-progress, and not in active use yet.
 | Subsystem Name                 | Subsystem Description/Purpose
 | --------------                 | -----------------------------
 | [bootstrapper](./bootstrapper) | Bootstrapping utility for subsytems
-| [ymir](./ymir)                 | Machine-image builder framework
-| [aether](./aether)             | Configuration management subsystem for images built by [ymir](./ymir)
-| [faro](./faro)                 | Service discovery, DNS stubbing
-| [chonk](./chonk)               | Common storage (RDBMS, cache, etc)
-| [sauce](./sauce)               | Source-code management
-| [photobook](./photobook)       | OCI image registry
-| [gnar](./gnar)                 | CI/CD
-| [gaia](./gaia)                 | Infrastructure-as-code modules
+| [imgbuilder](./imgbuilder)     | Machine-image builder framework
+| [configmgmt](./configmgmt)     | Configuration management subsystem for images built by [imgbuilder](./imgbuilder)
+| [netsvc](./netsvc)             | Service discovery, DNS stubbing
+| [datastore](./datastore)       | Common storage (RDBMS, cache, etc)
+| [sourcecode](./sourcecode)     | Source-code management
+| [ociregistry](./ociregistry)   | OCI image registry
+| [cicd](./cicd)                 | CI/CD
+| [infracode](./infracode)       | Infrastructure-as-code modules
+| [website](./website)           | Public website content & web server

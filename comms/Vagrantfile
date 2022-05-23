@@ -31,8 +31,8 @@ Vagrant.configure("2") do |config|
     comms.vm.provision "shell",
       inline: <<-SCRIPT
         export app_name='comms'
-        export aether_address='aether.service.consul'
-        bash /usr/local/ymir/scripts/run/main.sh
+        export configmgmt_address='configmgmt.service.consul'
+        bash /usr/local/imgbuilder/scripts/run/main.sh
       SCRIPT
   end
 

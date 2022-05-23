@@ -58,14 +58,14 @@ But, you probably don't want to do that.
 
 Additionally, in order to save on host memory, the bootstrapper by default will
 *build* all base images, but only *run* the subsystems considered "core" to the
-system as a whole. At the time of this writing, those services are `aether`,
-`faro`, and `chonk` (more info for which can be found in the adjacent
+system as a whole. At the time of this writing, those services are `configmgmt`,
+`netsvc`, and `datastore` (more info for which can be found in the adjacent
 directories in this repo). In order to launch more than those core subsystems,
 you can set the `OSC_SUBSYSTEMS` environment variable as a comma-separated
 string of *additional* subsystem names you want to deploy, e.g.:
 
 ```sh
-export OSC_SUBSYSTEMS=sauce,photobook,gnar
+export OSC_SUBSYSTEMS=sourcecode,ociregistry,cicd
 ```
 
 Once you have all prereqs satisfied, run the main bootstrapper script:
@@ -112,7 +112,7 @@ Or, if you want to keep the code but just want to remove the build artifacts,
 you can remove just those:
 
 ```sh
-rm -rf "${OSC_ROOT}"/ymir/output*
+rm -rf "${OSC_ROOT}"/imgbuilder/output*
 ```
 
 To remove the Vagrant Boxes that were built, you can run `vagrant box remove

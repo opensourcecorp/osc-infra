@@ -1,0 +1,6 @@
+.vagrant*
+*.auto.tfvars
+imgbuilder-local*
+
+# Any host backups of datastore data
+*data*/
