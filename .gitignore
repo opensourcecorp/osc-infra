@@ -1,4 +1,5 @@
 .packer.d/
+imgbuilder-local/
 
 # TODO: Maybe it makes sense to add this later?
 *.code-workspace

@@ -4,7 +4,8 @@ here = File.dirname(__FILE__)
 Vagrant.configure("2") do |config|
   box = "datastore"
 
-  has_replica = true
+  # Set to true to confirm replica is working; false for when memory-constrained
+  has_replica = false
 
   # datastore should persist DB data across VM lifecycles -- change to false if you don't want that
   persist_data = true

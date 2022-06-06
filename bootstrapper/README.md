@@ -25,11 +25,12 @@ options further.
 
 That being said, the core requirements are as follows:
 
-* For the `local-vm` bootstrapper: a host with sufficient CPU cores & RAM to
-  support the stack -- each VM by default requests one CPU, and one GB of RAM.
-  At the time of this writing, boostrapping the full OSC stack will take
-  ***around 12GB of free RAM***. The CPU limits you can mostly skirt around due
-  to low per-VM utilization, but the RAM requirement is a pretty hard req.
+* For the `local-vm` bootstrapper: a host with sufficient CPU cores, RAM, and
+  disk storage to support the stack -- each VM by default requests one CPU, 1GB
+  of RAM, and 10GB of disk space. At the time of this writing, boostrapping the
+  full OSC stack will take ***around 12GB of free RAM and disk size, each***.
+  The CPU limits you can mostly skirt around due to low per-VM utilization, but
+  the RAM & disk requirements are pretty firm.
 
 * The following toolset installed on the host, which are checked automatically
   via their equivalent CLI command names based on which bootstrapper you use:
