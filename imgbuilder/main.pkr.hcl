@@ -82,11 +82,6 @@ source "amazon-ebs" "main" {
     "osc:core" = "true"
   }
 
-  # Need BOTH of these for Spot Instance requests to work; bug in the provider:
-  # https://github.com/hashicorp/packer-plugin-amazon/issues/92
-  fleet_tags = {
-    "osc:core" = "true"
-  }
   spot_tags = {
     "osc:core" = "true"
   }
