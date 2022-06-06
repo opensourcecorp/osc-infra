@@ -44,6 +44,12 @@ export PKR_VAR_headless=true
 # BIG OL' LOOP
 while read -r subsystem; do
 
+  # Don't process commented-out subsystems
+  if grep -qE '^#' <<< "${subsystem}"; then
+    printf 'Subsystem "%s" is commented out in bootstrapper/subsystems.txt, so will not be processed\n' "$(sed -E 's/# ?//' <<< "${subsystem}")"
+    continue
+  fi
+
   # Build the imgbuilder base image if it doesn't exist (and if we haven't already
   # checked in this loop)
   if [[ "${subsystem}" == 'imgbuilder' ]]; then

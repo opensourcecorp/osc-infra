@@ -2,6 +2,6 @@ imgbuilder
 configmgmt
 netsvc
 datastore
-sourcecode
+# sourcecode
 ociregistry
 cicd
