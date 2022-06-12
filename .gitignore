@@ -1,5 +1,7 @@
 .packer.d/
 imgbuilder-local/
+# TODO: bootstrapper also symlinks a path here with the wrong name for some reason
+imgbuilder
 
 *.log
 
