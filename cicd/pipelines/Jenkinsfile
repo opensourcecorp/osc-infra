@@ -4,13 +4,13 @@ pipeline {
     stage('Echo') {
       steps {
         println 'Testing Jenkinsfile pickup'
+        sh 'ls -la'
       }
     }
     stage('ls in container') {
+      agent { docker { image 'alpine:latest' } }
       steps {
-        docker.image('alpine:latest').inside {
-          sh 'ls -la'
-        }
+        sh 'ls -la'
       }
     }
   }
