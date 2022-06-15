@@ -6,5 +6,12 @@ pipeline {
         println 'Testing Jenkinsfile pickup'
       }
     }
+    stage('ls in container') {
+      steps {
+        docker.image('alpine:latest').inside {
+          sh 'ls -la'
+        }
+      }
+    }
   }
 }
