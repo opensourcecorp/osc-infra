@@ -74,12 +74,15 @@ setup_oci_image_mirror_script:
       #!/usr/bin/env bash
       set -euo pipefail
       for img in \
-        debian:11 \
-        alpine:latest \
+        docker.io/library/debian:11 \
+        docker.io/library/alpine:latest \
+        ghcr.io/github/super-linter:slim-v4 \
+        ghcr.io/opensourcecorp/rhad:latest \
       ; do
-        docker pull docker.io/library/"${img}"
-        docker tag "${img}" {{ pillar['app_name'] }}.service.consul/mirrors/"${img}"
-        docker push {{ pillar['app_name'] }}.service.consul/mirrors/"${img}"
+        docker pull "${img}"
+        nametag=$(awk -F'/' '{ print $3 }' <<< "${img}")
+        docker tag "${img}" {{ pillar['app_name'] }}.service.consul/mirrors/"${nametag}"
+        docker push {{ pillar['app_name'] }}.service.consul/mirrors/"${nametag}"
       done
 
 enable_oci_image_mirroring:
@@ -87,6 +90,7 @@ enable_oci_image_mirroring:
   - name: |
       systemctl enable mirror-oci-images.timer
       systemctl start mirror-oci-images.timer
+      sleep 3600
       # Confirm it's working
       sleep 30
       docker pull {{ pillar['app_name'] }}.service.consul/mirrors/alpine:latest

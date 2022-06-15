@@ -141,25 +141,6 @@ jobs:
       run:
         path: echo
         args: ["Hello, OpenSourceCorp!"]
-  - task: try-super-linter
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: ghcr.io/github/super-linter
-          tag: latest
-  - task: try-rhad
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: ghrc.io/opensourcecorp/rhad
-          tag: latest
-      run:
-        path: rhad
-        args: ["lint"]
 
 EOF
   ./fly -t main validate-pipeline \

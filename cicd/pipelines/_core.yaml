@@ -4,12 +4,10 @@ runtime: &runtime
   - name: ((repo.name))-src
     path: ((repo.name))
   image_resource:
-    type: docker-image # registry-image doesn't have an insecure option yet, but it's on their master branch
+    type: registry-image
     source: 
-      repository: ociregistry.service.consul:8090/library/debian
+      repository: ociregistry.service.consul/library/debian
       tag: latest
-      insecure_registries: ["ociregistry.service.consul:8090"] # until ociregistry has a TLS cert
-      # insecure: true # NOT RELEASED YET
 
 task-main: &task-main
   <<: *runtime
@@ -66,3 +64,33 @@ jobs:
           - |
             bash ((repo.name))/scripts/sysinit.sh
             make -C ((repo.name)) push
+
+  # - task: try-super-linter
+  #   config:
+  #     platform: linux
+  #     image_resource:
+  #       type: registry-image
+  #       source:
+  #         repository: ghcr.io/github/super-linter
+  #         tag: slim-v4
+  #     params:
+  #       RUN_LOCAL: true
+  #       USE_FIND_ALGORITHM: true
+  #       IGNORE_GITIGNORED_FILES: true
+  #       FILTER_REGEX_EXCLUDE: 'testdata.*'
+  #       FILTER_REGEX_EXCLUDE: '.*\.vmdk|.*\.ovf|.*\.box|.*\.iso'
+  #       VALIDATE_GO: false
+  #       VALIDATE_NATURAL_LANGUAGE: false
+  #     run:
+  #       path: /action/lib/linter.sh
+  # - task: try-rhad
+  #   config:
+  #     platform: linux
+  #     image_resource:
+  #       type: registry-image
+  #       source:
+  #         repository: ghrc.io/opensourcecorp/rhad
+  #         tag: latest
+  #     run:
+  #       path: rhad
+  #       args: ["lint"]
