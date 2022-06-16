@@ -8,7 +8,7 @@ pipeline {
       }
     }
     stage('ls in container') {
-      agent { docker { image 'alpine:latest' } }
+      agent { docker { image 'alpine:latest', reuseNode true } }
       steps {
         sh 'ls -la'
       }
