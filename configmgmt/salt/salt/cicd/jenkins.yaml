@@ -1,0 +1,84 @@
+jenkins:
+  systemMessage: "Welcome to OpenSourceCorp!\n\n"
+  numExecutors: 2
+
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      # https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc
+      - gitHubApp:
+          appID: "211363"
+          description: "OSC GitHub app for Jenkins access"
+          id: "github-app"
+          privateKey: "${readFile:./jenkins-github.pem:-}"
+
+unclassified:
+  gitHubConfiguration:
+    apiRateLimitChecker: ThrottleOnOver
+
+# Requires the jobs-dsl plugin. Docs for how to configure are on the actual
+# running Jenkins instance at: ${URL}/plugin/job-dsl/api-viewer/index.html
+jobs:
+- script: |
+    organizationFolder('OpenSourceCorp') {
+      displayName('OpenSourceCorp')
+      organizations {
+        github {
+          apiUri('https://api.github.com')
+          repoOwner('opensourcecorp')
+          credentialsId('github-app')
+          traits {
+            gitHubExcludeArchivedRepositories()
+            gitHubBranchDiscovery {
+              /*
+                These have names IRL, but are indexed by which position they
+                show up as in the rules list. See the DSL viewer help linked
+                above for more details
+              */
+              strategyId(0) // no branches also filed as PRs
+            }
+          }
+        }
+      }
+      projectFactories {
+        remoteJenkinsFileWorkflowMultiBranchProjectFactory {
+          remoteJenkinsFileSCM {
+            gitSCM {
+              userRemoteConfigs {
+                userRemoteConfig {
+                  url('https://github.com/opensourcecorp/osc-infra.git')
+                  name('origin')
+                  refspec('')
+                  credentialsId('github-app')
+                }
+              }
+              branches {
+                branchSpec {
+                  name('*/feature/jenkinsfile-testing') // '*/main' when not testing
+                }
+              }
+              browser {}
+              gitTool('')
+            }
+          }
+          matchBranches(false)
+          fallbackBranch('main')
+          remoteJenkinsFile('cicd/pipelines/Jenkinsfile')
+          localMarker('')
+        }
+      }
+      properties {
+        suppressFolderAutomaticTriggering {
+          branches('.*')
+          strategy('INDEXING')
+        }
+      }
+      triggers {
+        // Periodically rescan Org if not otherwise run. This also ensures a
+        // scan happens at startup, since it would have "missed" one
+        periodicFolderTrigger {
+          interval('1d')
+        }
+      }
+    }

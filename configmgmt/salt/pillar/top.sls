@@ -25,13 +25,13 @@ base:
   'cicd*':
   - cicd._core
 
-  'cicd-web*':
-  - cicd.web
-  - cicd.secret
+  # 'cicd-controller*':
+  # - cicd.controller
+  # - cicd.secret
 
-  'cicd-worker*':
-  - cicd.worker
-  - cicd.secret
+  # 'cicd-agent*':
+  # - cicd.agent
+  # - cicd.secret
 
   'ociregistry*':
   - ociregistry._core

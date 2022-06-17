@@ -22,13 +22,14 @@ base:
   - netsvc._core
 
   'cicd*':
+  - _common.docker
   - cicd._core
 
-  'cicd-web*':
-  - cicd.web
+  # 'cicd-controller*':
+  # - cicd.controller
 
-  'cicd-worker*':
-  - cicd.worker
+  # 'cicd-agent*':
+  # - cicd.agent
 
   'ociregistry*':
   - _common.docker

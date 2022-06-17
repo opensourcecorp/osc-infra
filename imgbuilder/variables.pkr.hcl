@@ -99,7 +99,7 @@ variable "os_family" {
 variable "os_version" {
   description = "Full (semver) version number of OS, e.g. 1.0.0"
   type        = string
-  default     = "11.0.0"
+  default     = "11.2.0"
 }
 
 variable "os_version_major" {

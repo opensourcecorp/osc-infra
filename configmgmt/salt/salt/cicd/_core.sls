@@ -1,65 +1,55 @@
-install_packages:
-  pkg.installed:
-  - pkgs:
-    - apt-transport-https
-    - btrfs-progs
-    - ca-certificates
-    - curl
-    - file
-    - gnupg
-    - iproute2
-    - iptables
-    - jq
-    - python3
-    - python3-pip
-    - tar
+add_jenkins_jcasc_file:
+  file.managed:
+  - name: /home/admin/jenkins.yaml
+  - source: salt://cicd/jenkins.yaml
+  - mode: '0644'
+  - replace: true
 
-# get_latest_concourse_version:
-#   cmd.run:
-#   - name: |
-#       curl -fsSL https://api.github.com/repos/concourse/concourse/releases/latest \
-#       | jq -r '.name' \
-#       | sed 's/v//g' \
-#       > /etc/concourse_version
+add_jenkins_plugins_file:
+  file.managed:
+  - name: /home/admin/plugins.txt
+  - source: salt://cicd/plugins.txt
+  - mode: '0644'
+  - replace: true
 
-download_concourse:
-  file.directory:
-  - name: {{ pillar['concourse_root_work_dir'] }}
-  - user: root
-  - group: root
-  - dir_mode: 755
-  - recurse: [mode]
-  # cmd.run, not archive.extracted, because we need that latest version number
-  # dymamically from the host
+# Only add the GitHub key if it exists
+{% if salt.cp.list_master(prefix='cicd/jenkins-github.pem') | count %}
+add_jenkins_github_key:
+  file.managed:
+  - name: /home/admin/jenkins-github.pem
+  - source: salt://cicd/jenkins-github.pem
+  - mode: '0644'
+  - replace: true
+{% endif %}
+
+add_jenkins_containerfile:
+  file.managed:
+  - name: /home/admin/Containerfile
+  - source: salt://cicd/Containerfile
+  - mode: '0644'
+  - replace: true
+
+add_jenkins_docker_compose_file:
+  file.managed:
+  - name: /home/admin/docker-compose.yaml
+  - source: salt://cicd/docker-compose.yaml
+  - mode: '0644'
+  - replace: true
+
+run_jenkins_docker_compose_stack:
   cmd.run:
   - name: |
-      curl -fsSL \
-        -o {{ pillar['concourse_root_work_dir'] }}/concourse.tar.gz \
-        https://github.com/concourse/concourse/releases/download/v{{ pillar['concourse_version'] }}/concourse-{{ pillar['concourse_version'] }}-linux-amd64.tgz
-  - creates: {{ pillar['concourse_root_work_dir'] }}/concourse.tar.gz
-  archive.extracted:
-  - name: {{ pillar['concourse_root_work_dir'] }}
-  - source: {{ pillar['concourse_root_work_dir'] }}/concourse.tar.gz
-  
-generate_concourse_keys:
-  file.directory:
-  - name: {{ pillar['concourse_root_work_dir'] }}/keys
-  - user: root
-  - group: root
-  - dir_mode: 755
-  cmd.run:
-  - name: |
-      {{ pillar['concourse_root_work_dir'] }}/concourse/bin/concourse generate-key -t rsa -f {{ pillar['concourse_root_work_dir'] }}/keys/session_signing_key \
-      && {{ pillar['concourse_root_work_dir'] }}/concourse/bin/concourse generate-key -t ssh -f {{ pillar['concourse_root_work_dir'] }}/keys/tsa_host_key \
-      && {{ pillar['concourse_root_work_dir'] }}/concourse/bin/concourse generate-key -t ssh -f {{ pillar['concourse_root_work_dir'] }}/keys/worker_key
-  - creates:
-    - {{ pillar['concourse_root_work_dir'] }}/keys/session_signing_key
-    - {{ pillar['concourse_root_work_dir'] }}/keys/tsa_host_key
-    - {{ pillar['concourse_root_work_dir'] }}/keys/tsa_host_key.pub
-    - {{ pillar['concourse_root_work_dir'] }}/keys/worker_key
-    - {{ pillar['concourse_root_work_dir'] }}/keys/worker_key.pub
+      #!/usr/bin/env bash
+      set -euo pipefail
 
-create_initial_authorized_worker_key:
-  cmd.run:
-  - name: cp {{ pillar['concourse_root_work_dir'] }}/keys/worker_key.pub {{ pillar['concourse_root_work_dir'] }}/keys/authorized_worker_keys
-  - creates: {{ pillar['concourse_root_work_dir'] }}/keys/authorized_worker_keys
+      docker compose -f /home/admin/docker-compose.yaml up -d --build
+      sleep 5
+      until docker logs jenkins | grep -q 'Jenkins is fully up and running' ; do
+        ((sleep_count++))
+        if [[ "${sleep_count}" -gt 10 ]] ; then
+          printf 'ERROR: Jenkins took too long to come online successfully!\n' > /dev/stderr
+          exit 1
+        fi
+        printf 'Waiting for Jenkins container to finish setting up...\n' > /dev/stderr
+        sleep 5
+      done

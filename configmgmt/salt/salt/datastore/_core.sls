@@ -71,16 +71,6 @@ comms_init:
   - name: {{ pillar["comms_db_schema_name"] }}
   - dbname: {{ pillar["comms_db_name"] }}
 
-cicd_init:
-  postgres_user.present:
-  - name: {{ pillar["concourse_postgres_user"] }}
-  - password: {{ pillar["concourse_postgres_password"] }}
-  - login: true
-  postgres_database.present:
-  - name: {{ pillar["concourse_postgres_database"] }}
-  - owner: {{ pillar["concourse_postgres_user"] }}
-  - owner_recurse: true
-
 sourcecode_init:
   postgres_user.present:
   - name: {{ pillar["gitea_postgres_user"] }}

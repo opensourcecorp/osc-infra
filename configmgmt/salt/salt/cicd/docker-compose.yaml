@@ -1,0 +1,47 @@
+services:
+  docker:
+    image: 'docker:dind'
+    container_name: docker
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
+    ports:
+    - '2376:2376'
+    volumes:
+    - 'jenkins_home:/var/jenkins_home'
+    - 'jenkins_docker_certs:/certs/client'
+    networks: [jenkins]
+    privileged: true
+    command: '--storage-driver=overlay2'
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: ./Containerfile
+    image: osc-jenkins:latest
+    container_name: jenkins
+    environment:
+      # Prevents the need to provide initialAdminPassword, etc. in the UI
+      JAVA_OPTS: '-Djenkins.install.runSetupWizard=false'
+      DOCKER_HOST: tcp://docker:2376
+      DOCKER_CERT_PATH: /certs/client
+      DOCKER_TLS_VERIFY: 1
+    ports:
+    - '8080:8080'
+    - '50000:50000'
+    volumes:
+    - 'jenkins_home:/var/jenkins_home'
+    - './jenkins.yaml:/var/jenkins_home/jenkins.yaml'
+    - './jenkins-github.pem:/var/jenkins_home/jenkins-github.pem'
+    - 'jenkins_docker_certs:/certs/client:ro'
+    stdin_open: true
+    tty: true
+    restart: on-failure
+    networks: [jenkins]
+    depends_on: [docker]
+
+volumes:
+  jenkins_home:
+  jenkins_docker_certs:
+
+networks:
+  jenkins:
