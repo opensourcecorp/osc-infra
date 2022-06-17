@@ -1,0 +1,36 @@
+# For root Vagrantfile to keep paths consistent; use in place of '.' in paths
+here = File.dirname(__FILE__)
+
+Vagrant.configure("2") do |config|
+  box = "secretsmgmt"
+
+  username = "packer"
+  password = "packer"
+
+  config.ssh.username = username
+  config.ssh.password = password
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 1
+    vb.memory = 1024
+  end
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define "secretsmgmt" do |secretsmgmt|
+    secretsmgmt.vm.box = box
+
+    secretsmgmt.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}"
+    secretsmgmt.vm.network "forwarded_port", guest: 8200, host: 8200
+    secretsmgmt.vm.synced_folder "#{here}", "/vagrant", disabled: true
+    secretsmgmt.vm.provision "shell",
+      inline: <<-SCRIPT
+        export app_name='secretsmgmt'
+        export configmgmt_address='configmgmt.service.consul'
+        bash /usr/local/imgbuilder/scripts/run/main.sh
+      SCRIPT
+  end
+
+end

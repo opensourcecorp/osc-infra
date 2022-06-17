@@ -9,6 +9,9 @@ base:
   'configmgmt*':
   - configmgmt._core
 
+  'secretsmgmt*':
+  - secretsmgmt._core
+
   'datastore* and not datastore-replica*':
   - datastore._core
 

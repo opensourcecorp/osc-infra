@@ -24,6 +24,7 @@ end
 core_subsystems = [
   "configmgmt", # need always
   "netsvc", # need always
+  "secretsmgmt", # need for most
   "datastore", # need for most
   # "sourcecode", # needs datastore, but only at use-time, not boot-time
   # "ociregistry", # needs datastore

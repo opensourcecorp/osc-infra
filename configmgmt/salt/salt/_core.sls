@@ -1,8 +1,7 @@
 # Prevent unattended-upgrades from interfering with build steps that call APT operations
 kill_unattended_upgrades:
-  service.dead:
-  - name: unattended-upgrades.service
-  - enable: false
+  pkg.purged:
+  - name: unattended-upgrades
 
 # Append stuff to each of these sections as needed
 add_apt_repos:

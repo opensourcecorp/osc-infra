@@ -5,6 +5,9 @@ base:
   'configmgmt*':
   - configmgmt._core
 
+  'secretsmgmt*':
+  - secretsmgmt._core
+
   'datastore*':
   - datastore._core
   - datastore.secret

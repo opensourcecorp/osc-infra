@@ -1,6 +1,7 @@
 imgbuilder
 configmgmt
 netsvc
+secretsmgmt
 datastore
 # sourcecode
 ociregistry

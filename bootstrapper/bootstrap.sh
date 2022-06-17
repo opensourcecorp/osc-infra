@@ -7,7 +7,7 @@ here="$(dirname "$0")"
 source "${here}"/scripts/utils.sh
 
 # Choose which bootstrapper & instruction we're calling
-export bootstrapper="${1:-local}"
+export bootstrapper="${1:-local-vm}"
 export instruction="${2:-up}"
 printf 'Bootstrapper configured to run under mode "%s - %s"\n' "${bootstrapper}" "${instruction}"
 
