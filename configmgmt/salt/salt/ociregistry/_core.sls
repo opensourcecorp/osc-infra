@@ -65,6 +65,16 @@ setup_oci_image_mirror_timer:
       [Install]
       WantedBy=timers.target
 
+set_oci_image_mirror_list:
+  file.managed:
+  - name: /tmp/mirror-images.txt
+  - replace: true
+  - contents: |
+      docker.io/library/debian:11
+      docker.io/library/alpine:latest
+      ghcr.io/github/super-linter:slim-v4
+      ghcr.io/opensourcecorp/rhad:latest
+
 setup_oci_image_mirror_script:
   file.managed:
   - name: /usr/local/bin/mirror-oci-images
@@ -73,24 +83,29 @@ setup_oci_image_mirror_script:
   - contents: |
       #!/usr/bin/env bash
       set -euo pipefail
-      for img in \
-        docker.io/library/debian:11 \
-        docker.io/library/alpine:latest \
-        ghcr.io/github/super-linter:slim-v4 \
-        ghcr.io/opensourcecorp/rhad:latest \
-      ; do
+      while read -r img; do
         docker pull "${img}"
         nametag=$(awk -F'/' '{ print $3 }' <<< "${img}")
         docker tag "${img}" {{ pillar['app_name'] }}.service.consul/mirrors/"${nametag}"
         docker push {{ pillar['app_name'] }}.service.consul/mirrors/"${nametag}"
-      done
+      done < /tmp/mirror-images.txt
 
-enable_oci_image_mirroring:
+enable_and_validate_oci_image_mirroring:
   cmd.run:
   - name: |
       systemctl enable mirror-oci-images.timer
       systemctl start mirror-oci-images.timer
-      sleep 3600
       # Confirm it's working
-      sleep 30
-      docker pull {{ pillar['app_name'] }}.service.consul/mirrors/alpine:latest
+      while read -r img; do
+        nametag=$(awk -F'/' '{ print $3 }' <<< "${img}")
+        sleep_count=0
+        until docker pull {{ pillar['app_name'] }}.service.consul/mirrors/"${nametag}"; do
+          ((sleep_count++))
+          if [[ "${sleep_count}" -gt 30 ]]; then
+            printf 'ERROR: took too long to mirror image %s!\n' "${img}"
+            exit 1
+          fi
+          printf 'Waiting for image %s to be mirrored...\n' "${img}" > /dev/stderr
+          sleep 10
+        done
+      done < /tmp/mirror-images.txt

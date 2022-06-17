@@ -5,14 +5,14 @@ install_docker:
   - name: 'deb https://download.docker.com/linux/{{ pillar["os_family"] }} {{ pillar["os_alias"] }} stable'
   pkg.installed:
   - pkgs:
+    - containerd.io
     - docker-ce
     - docker-ce-cli
-    - containerd.io
+    - docker-compose-plugin
+    # required by Salt for docker states; this used to work implicitly when
+    # docker-compose was pip-installed later, but now it needs to be explicit
+    - python3-docker
   user.present:
   - name: admin
   - groups:
     - docker
-
-install_docker_compose:
-  pip.installed:
-  - name: docker-compose
