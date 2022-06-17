@@ -1,7 +1,7 @@
 app_name: cicd
 system_user: concourse
 
-concourse_version: '7.4.3'
+concourse_version: '7.8.0'
 
 concourse_root_work_dir: /opt/concourse
 concourse_cluster_name: main

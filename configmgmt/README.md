@@ -25,14 +25,14 @@ configurations/scripts.
 How to add a new application
 ----------------------------
 
-To add a new subsystem to `configmgmt`, take the following steps:
+To add a new subsystem or app to `configmgmt`, take the following steps:
 
 1. Create two new subfolders with an empty `_core.sls` file in each, i.e.
    `salt/salt/<subsystem_name>/_core.sls` and
    `salt/pillar/<subsystem_name>/_core.sls`.
 
 1. `salt/salt/<subsystem_name>/_core.sls` is where all of the Salt logic for
-   constructing your app's image will live. Review [Salt's official State module
+   constructing the app's image will live. Review [Salt's official State module
    docs](https://docs.saltproject.io/en/latest/ref/states/all/) or the other
    adjacent subdirectories for guidance.
 
@@ -42,7 +42,7 @@ To add a new subsystem to `configmgmt`, take the following steps:
    references. For example, `cicd` has a `concourse_version` key in its
    `_core.sls`.
 
-1. If you app will require any secrets for local development, create a
+1. If the app will require any secrets for local development, create a
    `salt/pillar/<subsystem_name>/secret.sls` file and add the keys there. This
    file is automatically gitignored.
 
@@ -61,6 +61,11 @@ To add a new subsystem to `configmgmt`, take the following steps:
 
 1. Add `imgbuildervars` files within the app's repo itself. Refer to
    [`imgbuilder`](../imgbuilder)'s docs for more information.
+
+1. If you are adding a subsystem that is to be considered "core" (i.e. several
+   other downstream subsytems will depend on it), then add its name to the
+   `core_subsystems` array in `../bootstrapper/Vagrantfile`. Be sure the order
+   of the subsystems in that array make sense!
 
 Developer notes
 ---------------

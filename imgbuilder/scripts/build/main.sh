@@ -18,6 +18,24 @@ apt-get update
 # Make sure you're in a spot to run any other scripts from the same workdir
 cd "$(dirname "$0")" || exit 1
 
+# I hate reading unindented heredocs in a function call, so set some up here,
+# like the Salt configs which would otherwise be gross escaped string flags to
+# the installer
+mkdir -p /etc/salt
+rand_suffix=$(openssl rand -hex 4)
+
+cat <<EOF > /etc/salt/master
+autosign_grains_dir: /etc/salt/autosign_grains
+ext_pillar:
+- vault: path=secret/osc-core
+EOF
+
+cat <<EOF > /etc/salt/minion
+id: imgbuilder-build-${rand_suffix}
+master: "127.0.0.1"
+autosign_grains: ["kernel"]
+EOF
+
 apt-wipe() {
   apt-get autoremove -y
   apt-get autoclean
@@ -34,8 +52,6 @@ salt-init() {
     exit 1
   fi
 
-  rand_suffix=$(openssl rand -hex 4)
-
   if [[ "${app_name}" == 'imgbuilder' ]]; then
     # These should be provided by the builder at build time
     mkdir -p /srv/{pillar,salt}
@@ -50,9 +66,7 @@ salt-init() {
     bash /tmp/bootstrap_salt.sh \
       -M \
       -P \
-      -x python3 \
-      -J '{"autosign_grains_dir": "/etc/salt/autosign_grains"}' \
-      -j "{\"id\": \"imgbuilder-build-${rand_suffix}\", \"master\": \"127.0.0.1\", \"autosign_grains\": [\"kernel\"]}"
+      -x python3
   elif [[ "${app_name}" == 'configmgmt' ]]; then
     mkdir -p /srv/{pillar,salt}
     cp -r /tmp/source_files/salt/* /srv/ || {
@@ -78,7 +92,7 @@ salt-init() {
   sleep 5
   salt-call state.apply
 
-  # If you don't run this, the SLS files (which also have secrets) will be on disk!
+  # If you don't run this, the SLS files (which may also have secrets) will be on disk!
   rm -rf /srv/*
 
   apt-wipe

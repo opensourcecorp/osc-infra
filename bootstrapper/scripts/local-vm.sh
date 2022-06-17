@@ -69,12 +69,18 @@ while read -r subsystem; do
   if [[ "${subsystem}" != 'imgbuilder' ]]; then
     if [[ ! -d "${OSC_ROOT}/imgbuilder/output-virtualbox-ovf-${subsystem}/" ]]; then
       # Many images require others to be running during provisioning, so start them in the right order
+      # TODO: I don't know how to do this more cleanly than nested if-blocks
       if [[ "${subsystem}" != 'configmgmt' ]] ; then
         vagrant up configmgmt
         if [[ "${subsystem}" != 'netsvc' ]] ; then
           vagrant up netsvc
-          if [[ "${subsystem}" != 'datastore' ]] ; then
-            vagrant up datastore datastore-replica
+          if [[ "${subsystem}" != 'secretsmgmt' ]] ; then
+            vagrant up secretsmgmt
+            if [[ "${subsystem}" != 'datastore' ]] ; then
+              vagrant up datastore
+              # To save RAM, only start up replica if it's set in the Vagrantfile
+              grep 'has_replica = true' "${OSC_ROOT}"/datastore/Vagrantfile && vagrant up datastore-replica
+            fi
           fi
         fi
       fi
@@ -135,6 +141,7 @@ jobs:
       run:
         path: echo
         args: ["Hello, OpenSourceCorp!"]
+
 EOF
   ./fly -t main validate-pipeline \
     --config /tmp/hello-osc.yaml
@@ -152,5 +159,5 @@ fi
 
 ### END TESTS
 
-printf '\nSuccessfully bootstrapped the OpenSourceCorp VM cluster locally!\n'
+printf '\nSuccessfully bootstrapped the specified OpenSourceCorp VM cluster locally!\n'
 printf 'You can tear down the running VMs by running "vagrant destroy -f" from this directory\n'
