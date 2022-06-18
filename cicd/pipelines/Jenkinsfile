@@ -10,7 +10,7 @@ pipeline {
     stage('ls in public image container') {
       agent {
         docker {
-          image 'alpine:latest'
+          image 'docker.io/library/alpine:latest'
           reuseNode true
         }
       }
