@@ -41,6 +41,7 @@ add_jenkins_docker_compose_file:
   file.managed:
   - name: /home/admin/docker-compose.yaml
   - source: salt://cicd/docker-compose.yaml
+  - template: jinja
   - user: admin
   - group: admin
   - mode: '0644'

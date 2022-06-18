@@ -9,6 +9,9 @@ services:
     volumes:
     - 'jenkins_home:/var/jenkins_home'
     - 'jenkins_docker_certs:/certs/client'
+    # So the Docker daemon can verify the OCI registry TLS cert
+    - '/usr/local/share/ca-certificates/osc-ca.crt:/etc/docker/certs.d/ociregistry.service.consul/osc-ca.crt:ro'
+    restart: always
     networks: [jenkins]
     privileged: true
     command: '--storage-driver=overlay2'
@@ -33,6 +36,8 @@ services:
     - './jenkins.yaml:/var/jenkins_home/jenkins.yaml'
     - './jenkins-github.pem:/var/jenkins_home/jenkins-github.pem'
     - 'jenkins_docker_certs:/certs/client:ro'
+    - '/usr/local/share/ca-certificates/{{ pillar['app_name'] }}.crt:/usr/local/share/ca-certificates/{{ pillar['app_name'] }}.crt:ro'
+    - '/etc/ssl/private/{{ pillar['app_name'] }}.key:/etc/ssl/private/{{ pillar['app_name'] }}.key:ro'
     stdin_open: true
     tty: true
     restart: on-failure
