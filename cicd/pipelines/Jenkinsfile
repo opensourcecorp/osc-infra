@@ -33,7 +33,6 @@ pipeline {
           // reuseNode true
         }
       }
-      env {}
       steps {
         sh '''
           /home/rhad/rhad-src/rhad lint
