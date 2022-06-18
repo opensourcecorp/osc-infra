@@ -14,12 +14,13 @@ pipeline {
             -e FILTER_REGEX_EXCLUDE='.*\\.vmdk|.*\\.ovf|.*\\.box|.*\\.iso' \
             -e VALIDATE_GO=false \
             -e VALIDATE_NATURAL_LANGUAGE=false
+            --entrypoint=''
           '''
         }
       }
       steps {
         sh '''
-          true
+          /action/lib/linter.sh
         '''
       }
     }
