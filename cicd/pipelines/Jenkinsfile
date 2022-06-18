@@ -1,33 +1,48 @@
 pipeline {
   agent any
   stages {
-    stage('Echo') {
-      steps {
-        println 'Testing Jenkinsfile pickup'
-        sh 'ls -la'
-      }
-    }
-    stage('ls in public image container') {
+    stage('Lint (GH Super-Linter)') {
       agent {
         docker {
-          image 'docker.io/library/alpine:latest'
-          reuseNode true
+          image 'docker.io/github/super-linter:slim-v4'
+          args '''
+            -v "${PWD}":/tmp/lint \
+            -e RUN_LOCAL=true \
+            -e USE_FIND_ALGORITHM=true \
+            -e IGNORE_GITIGNORED_FILES=true \
+            -e FILTER_REGEX_EXCLUDE='testdata.*' \
+            -e FILTER_REGEX_EXCLUDE='.*\.vmdk|.*\.ovf|.*\.box|.*\.iso' \
+            -e VALIDATE_GO=false \
+            -e VALIDATE_NATURAL_LANGUAGE=false
+          '''
         }
       }
       steps {
-        sh 'ls -la'
+        sh '''
+          /action/lib/run.sh
+        '''
       }
     }
-    stage('ls in private image container') {
+    stage('Lint (rhad)') {
       agent {
         docker {
-          image 'ociregistry.service.consul/mirrors/alpine:latest'
-          reuseNode true
+          image 'ghcr.io/opensourcecorp/rhad:latest'
+          args '''
+            -v "${PWD}":/home/rhad/src
+          '''
+          // reuseNode true
         }
       }
+      env {}
       steps {
-        sh 'ls -la'
+        sh '''
+          /home/rhad/rhad-src/rhad lint
+        '''
       }
     }
+    // stage('Test') {}
+    // stage('Build') {}
+    // stage('Push') {}
+    // stage('Deploy') {}
   }
 }
