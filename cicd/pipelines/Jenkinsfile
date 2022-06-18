@@ -19,7 +19,7 @@ pipeline {
       }
       steps {
         sh '''
-          /action/lib/run.sh
+          true
         '''
       }
     }
