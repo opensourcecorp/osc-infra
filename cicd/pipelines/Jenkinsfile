@@ -8,13 +8,23 @@ pipeline {
       }
     }
     stage('ls in public image container') {
-      agent { docker { image 'alpine:latest', reuseNode true } }
+      agent {
+        docker {
+          image 'alpine:latest'
+          reuseNode true
+        }
+      }
       steps {
         sh 'ls -la'
       }
     }
     stage('ls in private image container') {
-      agent { docker { image 'ociregistry.service.consul/mirrors/alpine:latest', reuseNode true } }
+      agent {
+        docker {
+          image 'ociregistry.service.consul/mirrors/alpine:latest'
+          reuseNode true
+        }
+      }
       steps {
         sh 'ls -la'
       }
