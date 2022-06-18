@@ -13,6 +13,7 @@ run_docker_registry:
   - name: ociregistry
   - image: 'docker.io/library/registry:{{ pillar['docker_registry_version'] }}'
   - binds:
+    - '/root/ociregistry:/var/lib/registry'
     - '/usr/local/share/ca-certificates/{{ pillar['app_name'] }}.crt:/certs/{{ pillar['app_name'] }}.crt:ro'
     - '/etc/ssl/private/{{ pillar['app_name'] }}.key:/certs/{{ pillar['app_name'] }}.key:ro'
   - environment:
@@ -32,6 +33,10 @@ run_docker_registry:
     - '8080:8080/tcp'
   - restart_policy: always #}
 
+# It would be great to just set up the registry as a pull-through cache, but
+# according to their config docs[0], you can't *push* to a registry configured
+# as such. So, we can mirror some public images ourselves.
+# [0] https://docs.docker.com/registry/configuration/#proxy
 setup_oci_image_mirror_service:
   file.managed:
   - name: /etc/systemd/system/mirror-oci-images.service
@@ -65,6 +70,7 @@ setup_oci_image_mirror_timer:
       [Install]
       WantedBy=timers.target
 
+# TODO: don't do this, just configure the registry as a pull-through cache
 set_oci_image_mirror_list:
   file.managed:
   - name: /tmp/mirror-images.txt
@@ -72,8 +78,9 @@ set_oci_image_mirror_list:
   - contents: |
       docker.io/library/debian:11
       docker.io/library/alpine:latest
-      ghcr.io/github/super-linter:slim-v4
-      ghcr.io/opensourcecorp/rhad:latest
+# TODO: These are HUGE, and they seem to keep crashing the registry? ('unexpected EOF' on push). Keep exploring WHY/HOW it crashes though
+#      ghcr.io/github/super-linter:slim-v4
+#      ghcr.io/opensourcecorp/rhad:latest
 
 setup_oci_image_mirror_script:
   file.managed:

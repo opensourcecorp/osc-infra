@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
   box = "cicd"
 
   num_controllers = 1
-  num_agents      = 1
+  num_agents      = 0
 
   username = "packer"
   password = "packer"

@@ -39,6 +39,7 @@ edit_postgres_settings:
       wal_sender_timeout = 60s # default
       track_commit_timestamp = on # default is 'off'
 
+# TODO: postgres install logs keep throwing warnings that MD5 auth is deprecated; explore how to change the auth type
 edit_postgres_for_password_auth:
   file.append:
   - name: /etc/postgresql/{{ pillar["postgres_version_major"] }}/main/pg_hba.conf
