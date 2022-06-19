@@ -11,7 +11,7 @@ pipeline {
           image 'docker.io/github/super-linter:slim-v4'
           // Note that there's a bug in the 
           args '''
-            -v "${PWD}":/tmp/lint \
+            -v "${env.WORKSPACE}":/tmp/lint \
             -e RUN_LOCAL=true \
             -e USE_FIND_ALGORITHM=true \
             -e IGNORE_GITIGNORED_FILES=true \
