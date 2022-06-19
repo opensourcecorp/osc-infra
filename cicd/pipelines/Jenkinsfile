@@ -10,7 +10,7 @@ pipeline {
         docker {
           image 'docker.io/github/super-linter:slim-v4'
           // Note that there's a bug in the 
-          args '''
+          args """
             -v "${env.WORKSPACE}":/tmp/lint \
             -e RUN_LOCAL=true \
             -e USE_FIND_ALGORITHM=true \
@@ -20,7 +20,7 @@ pipeline {
             -e VALIDATE_GO=false \
             -e VALIDATE_NATURAL_LANGUAGE=false
             --entrypoint=''
-          '''
+          """
         }
       }
       steps {
@@ -33,10 +33,10 @@ pipeline {
       agent {
         docker {
           image 'ghcr.io/opensourcecorp/rhad:latest'
-          args '''
-            -v "${PWD}":/home/rhad/src \
+          args """
+            -v "${env.WORKSPACE}":/home/rhad/src \
             --entrypoint=''
-          '''
+          """
           // reuseNode true
         }
       }
