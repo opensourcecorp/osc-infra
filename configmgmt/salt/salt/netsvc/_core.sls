@@ -23,6 +23,8 @@ enable_consul_server_agent:
       [Service]
       User=root
       ExecStart=/usr/bin/consul agent -config-dir /etc/consul.d/
+      Restart=always
+      RestartSec=2s
 
       [Install]
       WantedBy=multi-user.target
