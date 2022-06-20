@@ -18,6 +18,18 @@ if [[ -z "${configmgmt_address:-}" ]]; then
   exit 1
 fi
 
+# Check & extend root partition if there's space, e.g. if you resized the disk
+# For some reason, we need to run growpart on the unmounted partition as well,
+# first
+lsblk -l | awk 'NR > 2 && $0 ~ / $/ { print $1 }' > /tmp/unmounted-disk-part
+lsblk -l | awk 'NR > 2 && $0 ~ /\/$/ { print $1 }' > /tmp/root-disk-part
+for part in unmounted root; do
+  growpart \
+    /dev/"$(sed -E 's;(.*)[0-9]+;\1;' /tmp/${part}-disk-part)" \
+    "$(sed -E 's;.*([0-9]+);\1;' /tmp/${part}-disk-part)"
+done
+resize2fs -p -F /dev/"$(cat /tmp/root-disk-part)"
+
 # Need to edit the Consul Client config first, so it can use configmgmt's DNS name
 # TODO: make this less of a garbage thing to do; the iface name could also end up being super brittle
 if [[ "${app_name}" != 'netsvc' ]]; then

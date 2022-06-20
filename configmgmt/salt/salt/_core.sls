@@ -3,6 +3,33 @@ kill_unattended_upgrades:
   pkg.purged:
   - name: unattended-upgrades
 
+# Clear out Debian cache to help with random hash sum mismatches
+clear_apt_cache:
+  cmd.run:
+  - name: 'rm -rf /var/lib/apt/lists/*'
+
+# https://askubuntu.com/a/1242739
+disable_apt_sha256_checks:
+  cmd.run:
+  - name: |
+      mkdir -p /etc/gcrypt
+      printf 'all\n' > /etc/gcrypt/hwf.deny
+
+# Set up a swapfile, since swap partition is disabled
+{# create_swapfile:
+  cmd.run:
+  - name: |
+      swapoff -a
+      fallocate -l 1g /swapfile
+      chmod 0600 /swapfile
+      mkswap /swapfile
+      swapon /swapfile
+      mkdir -p /etc/fstab.d
+      printf '/swapfile  none  swap  sw  0  0\n' > /etc/fstab.d/swapfile.fstab
+  - creates:
+    - /swapfile
+    - /etc/fstab.d/swapfile.fstab #}
+
 # Append stuff to each of these sections as needed
 add_apt_repos:
   cmd.run:
@@ -26,6 +53,7 @@ install_pkgs:
     - apt-transport-https
     - build-essential
     - ca-certificates
+    - cloud-guest-utils # for growpart command
     - consul
     - curl
     - fail2ban
@@ -81,6 +109,7 @@ enable_prometheus_node_exporter:
       [Service]
       User=root
       ExecStart=/usr/local/bin/node_exporter
+      Restart=always
 
       [Install]
       WantedBy=multi-user.target

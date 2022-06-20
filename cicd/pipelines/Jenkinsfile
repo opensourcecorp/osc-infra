@@ -1,10 +1,54 @@
+// Note that there's a bug[0] in the Docker Workflow plugin that gags on images
+// with entrypoints; so, you need to disable them in the agent args list, and
+// then spec them manually as the step(s)
+// [0] https://issues.jenkins.io/browse/JENKINS-54389
 pipeline {
   agent any
   stages {
-    stage('Echo') {
+    stage('Lint (GH Super-Linter)') {
+      agent {
+        docker {
+          image 'docker.io/github/super-linter:slim-v4'
+          // Note that there's a bug in the 
+          args """
+            -v "${env.WORKSPACE}":/tmp/lint \
+            -e RUN_LOCAL=true \
+            -e USE_FIND_ALGORITHM=true \
+            -e IGNORE_GITIGNORED_FILES=true \
+            -e FILTER_REGEX_EXCLUDE='testdata.*' \
+            -e FILTER_REGEX_EXCLUDE='.*\\.vmdk|.*\\.ovf|.*\\.box|.*\\.iso' \
+            -e VALIDATE_GO=false \
+            -e VALIDATE_NATURAL_LANGUAGE=false
+            --entrypoint=''
+          """
+        }
+      }
       steps {
-        println 'Testing Jenkinsfile pickup'
+        sh '''
+          /action/lib/linter.sh
+        '''
       }
     }
+    stage('Lint (rhad)') {
+      agent {
+        docker {
+          image 'ghcr.io/opensourcecorp/rhad:latest'
+          args """
+            -v "${env.WORKSPACE}":/home/rhad/src \
+            --entrypoint=''
+          """
+          // reuseNode true
+        }
+      }
+      steps {
+        sh '''
+          /home/rhad/rhad-src/rhad lint
+        '''
+      }
+    }
+    // stage('Test') {}
+    // stage('Build') {}
+    // stage('Push') {}
+    // stage('Deploy') {}
   }
 }

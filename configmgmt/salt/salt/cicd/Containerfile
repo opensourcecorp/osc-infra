@@ -1,0 +1,17 @@
+FROM docker.io/jenkins/jenkins:lts
+
+WORKDIR /var/jenkins_home
+
+# Install just the docker CLI, so we can run jobs through another Docker socket
+USER root
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/docker.gpg && \
+    printf 'deb https://download.docker.com/linux/debian bullseye stable\n' > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && apt-get install -y docker-ce-cli && \
+    rm -rf /var/cache/apt/*
+
+USER jenkins
+
+COPY plugins.txt .
+RUN jenkins-plugin-cli --plugin-file ./plugins.txt
+
+COPY jenkins.yaml .

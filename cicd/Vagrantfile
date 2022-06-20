@@ -4,10 +4,8 @@ here = File.dirname(__FILE__)
 Vagrant.configure("2") do |config|
   box = "cicd"
 
-  num_web     = 1
-  num_workers = 1
-
-  has_router = false
+  num_controllers = 1
+  num_agents      = 0
 
   username = "packer"
   password = "packer"
@@ -16,8 +14,8 @@ Vagrant.configure("2") do |config|
   config.ssh.password = password
 
   config.vm.provider "virtualbox" do |vb|
-    vb.cpus = 1
-    vb.memory = 1024
+    vb.cpus = 2
+    vb.memory = 2048
     # vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
     # much faster startups of subsequent identical base VMs, but leaves the base VM in VBox's storage after destroy op
     # vb.linked_clone = true
@@ -27,41 +25,21 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  if has_router then
-    config.vm.define "cicd-router" do |router|
-      router.vm.box = box
-      router.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
-      router.vm.network "forwarded_port", guest: 80, host: 8080
-      router.vm.synced_folder "#{here}", "/vagrant", disabled: true
-
-      router.vm.provision "file", source: "./vars", destination: "/tmp/vars"
-      router.vm.provision "file", source: "./router-config", destination: "/tmp/router-config"
-      router.vm.provision "shell",
-        inline: <<-SCRIPT
-          sudo su -
-          hostnamectl set-hostname "concourse-router"
-          useradd nginx
-          apt-get update && apt-get install -y nginx
-          cp /tmp/router-config/nginx-vagrant.conf /etc/nginx/nginx.conf
-          # NGINX gets mad because you took out the PIDfile, so be careful here
-          sleep 1
-          systemctl restart nginx
-          sleep 3
-          ! systemctl is-failed nginx || exit 1
-        SCRIPT
-    end
-  end
-
   # Numbered according to their last IP int
-  (1..num_web).each do |i|
-    config.vm.define "cicd-web-#{i}" do |web|
-      web.vm.box = box
-      web.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
-      web.vm.network "forwarded_port", guest: 8080, host: (8080 + i)
-      web.vm.synced_folder "#{here}", "/vagrant", disabled: true
-      web.vm.provision "shell",
+  (1..num_controllers).each do |i|
+    config.vm.define "cicd-controller-#{i}" do |cfg|
+      cfg.vm.box = box
+
+      cfg.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+      cfg.vm.network "forwarded_port", guest: 8080, host: (8080 + i - 1)
+      cfg.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+      # Images can be pretty big, so expand the disk here
+      cfg.vm.disk :disk, size: "20GB", primary: true
+
+      cfg.vm.provision "shell",
         inline: <<-SCRIPT
-          export app_name='cicd-web'
+          export app_name='cicd-controller'
           export configmgmt_address='configmgmt.service.consul'
           bash /usr/local/imgbuilder/scripts/run/main.sh
         SCRIPT
@@ -69,14 +47,14 @@ Vagrant.configure("2") do |config|
   end
 
   # Numbered according to their last IP int
-  (1..num_workers).each do |i|
-    config.vm.define "cicd-worker-#{i}" do |worker|
-      worker.vm.box = box
-      worker.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
-      worker.vm.synced_folder "#{here}", "/vagrant", disabled: true
-      worker.vm.provision "shell",
+  (1..num_agents).each do |i|
+    config.vm.define "cicd-agent-#{i}" do |cfg|
+      cfg.vm.box = box
+      cfg.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+      cfg.vm.synced_folder "#{here}", "/vagrant", disabled: true
+      cfg.vm.provision "shell",
         inline: <<-SCRIPT
-          export app_name='cicd-worker'
+          export app_name='cicd-agent'
           export configmgmt_address='configmgmt.service.consul'
           bash /usr/local/imgbuilder/scripts/run/main.sh
         SCRIPT

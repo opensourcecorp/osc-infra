@@ -2,6 +2,6 @@
 disable_host_node_id = true
 
 service {
-  name = "cicd-web"
+  name = "cicd-controller"
   port = 443
 }

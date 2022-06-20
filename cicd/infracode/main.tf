@@ -14,9 +14,9 @@ module "web" {
   instance_type     = "t3a.micro"
   is_osc_core       = true
   keypair_name      = var.keypair_name
-  name_tag          = "${var.app_name}-web"
+  name_tag          = "${var.app_name}-controller"
   source_address    = "https://github.com/opensourcecorp/${var.app_name}.git"
-  source_ami_filter = "*${var.app_name}-web*"
+  source_ami_filter = "*${var.app_name}-controller*"
 
   sg_rules_maplist = [
     {
