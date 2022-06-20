@@ -53,6 +53,7 @@ install_pkgs:
     - apt-transport-https
     - build-essential
     - ca-certificates
+    - cloud-guest-utils # for growpart command
     - consul
     - curl
     - fail2ban
