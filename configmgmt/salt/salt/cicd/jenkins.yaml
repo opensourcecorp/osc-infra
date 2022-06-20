@@ -55,7 +55,7 @@ jobs:
               }
               branches {
                 branchSpec {
-                  name('*/feature/jenkinsfile-testing') // '*/main' when not testing
+                  name('*/main')
                 }
               }
               browser {}
