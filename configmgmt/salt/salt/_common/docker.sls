@@ -2,7 +2,7 @@ install_docker:
   cmd.run:
   - name: 'curl -fsSL https://download.docker.com/linux/{{ pillar["os_family"] }}/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/docker.gpg'
   pkgrepo.managed:
-  - name: 'deb https://download.docker.com/linux/{{ pillar["os_family"] }} {{ pillar["os_alias"] }} stable'
+  - name: 'deb [signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/{{ pillar["os_family"] }} {{ pillar["os_alias"] }} stable'
   pkg.installed:
   - pkgs:
     - containerd.io

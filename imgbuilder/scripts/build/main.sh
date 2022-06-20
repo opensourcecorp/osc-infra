@@ -15,6 +15,9 @@ until timedatectl | grep 'synchronized: yes' > /dev/null; do
 done
 apt-get update
 
+# Check & extend root partition if there's space, e.g. if you resized the disk
+df | grep -E '/$' | awk '{ print $1 }' | xargs -I{} resize2fs -p -F {}
+
 # Make sure you're in a spot to run any other scripts from the same workdir
 cd "$(dirname "$0")" || exit 1
 

@@ -261,6 +261,12 @@ variable "proxmox_password" {
 ##############
 # VirtualBox #
 ##############
+variable "virtualbox_disk_size" {
+  description = "Amount of disk storage, in GiB, for the VBox builder VM"
+  type        = number
+  default     = 10240
+}
+
 variable "virtualbox_memory" {
   description = "Amount of memory, in MiB, for the VBox builder VM"
   type        = number

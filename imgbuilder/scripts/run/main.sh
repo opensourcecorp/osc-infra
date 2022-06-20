@@ -18,6 +18,9 @@ if [[ -z "${configmgmt_address:-}" ]]; then
   exit 1
 fi
 
+# Check & extend root partition if there's space, e.g. if you resized the disk
+df | grep -E '/$' | awk '{ print $1 }' | xargs -I{} resize2fs -p -F {}
+
 # Need to edit the Consul Client config first, so it can use configmgmt's DNS name
 # TODO: make this less of a garbage thing to do; the iface name could also end up being super brittle
 if [[ "${app_name}" != 'netsvc' ]]; then

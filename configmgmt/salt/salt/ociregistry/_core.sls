@@ -100,6 +100,8 @@ setup_oci_image_mirror_script:
 enable_and_validate_oci_image_mirroring:
   cmd.run:
   - name: |
+      # Don't bother trying this if Docker wasn't even successfully installed earlier
+      command -v docker || exit 1
       systemctl enable mirror-oci-images.timer
       systemctl start mirror-oci-images.timer
       # Confirm it's working

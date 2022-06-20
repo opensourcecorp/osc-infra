@@ -166,7 +166,7 @@ source "proxmox-clone" "main" {
 
 source "virtualbox-iso" "main" {
   boot_command     = local.boot_command
-  disk_size        = 10240
+  disk_size        = var.virtualbox_disk_size
   guest_os_type    = "Linux_64"
   headless         = local.headless
   http_directory   = local.http_directory
@@ -190,9 +190,9 @@ source "virtualbox-iso" "main" {
 
 source "virtualbox-ovf" "main" {
   headless         = local.headless
-  source_path      = local.virtualbox_ovf_path
   output_directory = "output-virtualbox-ovf-${var.app_name}"
   shutdown_command = local.shutdown_command
+  source_path      = local.virtualbox_ovf_path
   ssh_password     = local.ssh_password
   ssh_port         = local.ssh_port
   ssh_username     = local.ssh_username

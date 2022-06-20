@@ -25,12 +25,13 @@ Vagrant.configure("2") do |config|
   config.vm.define "ociregistry" do |ociregistry|
     ociregistry.vm.box = box
 
-    # Images can be pretty big, so
-    ociregistry.vm.disk :disk, size: "20GB", primary: true
-
     ociregistry.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
     ociregistry.vm.network "forwarded_port", guest: 443, host: 8444
     ociregistry.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+    # Images can be pretty big, so expand the disk here
+    ociregistry.vm.disk :disk, size: "20GB", primary: true
+
     ociregistry.vm.provision "shell",
       inline: <<-SCRIPT
         export app_name='ociregistry'
