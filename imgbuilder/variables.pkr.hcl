@@ -214,6 +214,27 @@ variable "do_vpc_id" {
 }
 
 ###########
+# Hyper-V #
+###########
+variable "hyperv_disk_size" {
+  description = "Disk size of the Hyper-V builder VM, in MB"
+  type        = number
+  default     = 10240
+}
+
+variable "hyperv_memory" {
+  description = "Amount of memory, in MiB, for the Hyper-V builder VM"
+  type        = number
+  default     = 1024
+}
+
+variable "hyperv_vmcx_path" {
+  description = "Path on disk to a Hyper-V VMCX file"
+  type        = string
+  default     = ""
+}
+
+###########
 # Proxmox #
 ###########
 variable "proxmox_url" {

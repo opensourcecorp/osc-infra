@@ -46,8 +46,8 @@ source "amazon-ebs" "main" {
   source_ami_filter {
     filters = {
       # imgbuilder & ... start from Debian base, others start from imgbuilder (or another base from imgbuilder)
-      name             = local.source_ami_name_pattern
-      root-device-type = "ebs"
+      name                = local.source_ami_name_pattern
+      root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
     most_recent = true
@@ -96,6 +96,39 @@ source "digitalocean" "main" {
   snapshot_name      = "configmgmt"
   ssh_username       = "root"
   vpc_uuid           = var.do_vpc_id
+}
+
+# You'd really only use this if you're running within WSL2, since WSL2 disables
+# VirtualBox access and you have to use Hyper-V
+source "hyperv-iso" "main" {
+  boot_command     = local.boot_command
+  cpus             = 1
+  disk_block_size  = 1
+  disk_size        = var.hyperv_disk_size
+  guest_os_type    = "Linux_64"
+  headless         = local.headless
+  http_directory   = local.http_directory
+  iso_checksum     = local.iso_checksum
+  iso_url          = local.iso_url
+  memory           = var.hyperv_memory
+  output_directory = "output-hyperv-iso-${var.app_name}"
+  shutdown_command = local.shutdown_command
+  ssh_password     = local.ssh_password
+  ssh_port         = local.ssh_port
+  ssh_username     = local.ssh_username
+  ssh_wait_timeout = local.ssh_wait_timeout
+  # vboxmanage = [
+  #   ["modifyvm", "{{ .Name }}", "--memory", "${var.virtualbox_memory}"],
+  #   ["modifyvm", "{{ .Name }}", "--cpus", "1"],
+  #   ["modifyvm", "{{ .Name }}", "--vram", "16"],
+  #   ["modifyvm", "{{ .Name }}", "--nic1", "nat"],
+  #   ["modifyvm", "{{ .Name }}", "--nic2", "hostonly", "--hostonlyadapter2", "vboxnet0"]
+  # ]
+  vm_name = local.vm_name
+}
+
+source "hyperv-vmcx" "main" {
+
 }
 
 # This requires some post-install Proxmox setup:
