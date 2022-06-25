@@ -1,8 +1,8 @@
 imgbuilder
-configmgmt
-netsvc
-secretsmgmt
-datastore
+configmgmt:core
+netsvc:core
+secretsmgmt:core
+datastore:core
 # sourcecode
 ociregistry
 cicd

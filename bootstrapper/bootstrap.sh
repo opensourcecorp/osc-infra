@@ -19,8 +19,8 @@ if [[ -z "${OSC_ROOT:-}" ]]; then
   export OSC_ROOT
 else
   printf 'INFO: OSC_ROOT was found set to %s, so will use that as the OpenSourceCorp infra root directory\n' "${OSC_ROOT}"
-  export OSC_ROOT
   mkdir -p "${OSC_ROOT}"
+  export OSC_ROOT
 fi
 
 # Where the shared OSC Packer cache will live

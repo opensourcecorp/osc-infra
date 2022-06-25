@@ -32,6 +32,47 @@ check-required-tools() {
   check-errors
 }
 
+# This function parses out the subsystems.txt and the OSC_SUBSYSTEMS env var to
+# determine what subsystems to actually process as part of bootstrapping.
+# There's a lot of stderr redirection (>&2), because the function call stdout
+# itself should be captured as a result of a call
+get-subsystems() {
+  while read -r line ; do
+    # Don't process commented-out subsystems, or what could be actual comments
+    # (more than two word tokens, since subsytem names don't have spaces)
+    if grep -qE '^#' <<< "${line}" ; then
+      [[ $(grep -qE '^#' <<< "${line}" | wc -w) -le 2 ]] || continue
+      printf 'Subsystem "%s" is commented out in bootstrapper/subsystems.txt, so will not be processed\n' "$(sed -E 's/# ?//' <<< "${line}")" >&2
+      continue
+    fi
+
+    # Lines in subsystems.txt separated by a colon indicate what type of
+    # subsystem it is -- currently, this can just be ":core"
+    if grep -qE ':core' <<< "${line}"; then
+      readarray -d':' -t core_subname <<< "${line}"
+      core_subsystems+=("${core_subname[0]}")
+    fi
+
+    # Now parse out the env var for additional subsystems
+    if [[ -n "${OSC_SUBSYSTEMS:-}" ]]; then
+      readarray -d',' -t addl_subname <<< "${line}"
+      addl_subsystems+=("${addl_subname[0]}")
+    fi
+
+  done < "${OSC_ROOT}"/bootstrapper/subsystems.txt
+
+  if [[ -z "${OSC_SUBSYSTEMS:-}" ]]; then
+    printf 'Environment variable OSC_SUBSYSTEMS is unset, so starting core subsystems only:\n' >&2
+  else
+    printf 'Environment variable OSC_SUBSYSTEMS was set as "%s", so will try to start those listed in addition to core subsystems:\n' "${OSC_SUBSYSTEMS}" >&2
+  fi
+
+  for s in "${core_subsystems[@]}" "${addl_subsystems[@]}"; do
+    printf '%s\n' "${s}" >&2 # for logging
+    printf '%s ' "${s}" # for actually returning output
+  done
+}
+
 # Adds dummy secret SLS files to configmgmt's repo, so all the services needing
 # secrets can start.
 add-configmgmt-dummy-secrets() {
