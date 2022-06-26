@@ -103,6 +103,14 @@ variable is set to the value you used to deploy everything, and run:
 ./bootstrap.sh [bootstrapper_name] down
 ```
 
+For the `local-vm` bootstrapper, if you just want to bring down a single
+subsystem, you can do so fom its respective directory. For example:
+
+```sh
+# Parentheses runs this in a subshell, so you don' have to cd back here afterwards
+(cd ../datastore && vagrant destroy -f)
+```
+
 Once that's done, if you want to *completely* remove all artifacts, VM images,
 caches, etc., you can also run:
 
