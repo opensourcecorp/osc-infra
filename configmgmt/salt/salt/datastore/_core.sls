@@ -114,31 +114,9 @@ verify_postgres_running:
 ### redis ###
 #############
 
-# # The actual test step can be comment-toggled in the compile state below, since it takes a long time to run
-# install_tcl_for_redis_tests:
-#   pkg.installed:
-#   - pkgs: 
-#     - tcl
-
-get_redis_stable:
-  archive.extracted:
-  - name: /tmp
-  - source: https://download.redis.io/redis-stable.tar.gz
-  - skip_verify: true
-  - if_missing: /tmp/redis-stable
-
-compile_and_install_redis:
-  cmd.run:
-  - name: |
-      cd /tmp/redis-stable
-      make BUILD_TLS=yes
-      # make test # optional, but takes a long time (also requires `tcl`)
-      make install BUILD_TLS=yes
-      which redis-server # to make sure if & where it made it onto the PATH
-  # If not running as root, we'd need to `sudo make install`, so specify just in case this ever defaults to another user
-  - runas: root
-  - creates:
-    - /usr/local/bin/redis-server
+install_redis:
+  pkg.installed:
+  - name: redis
 
 create_redis_config:
   file.managed:
@@ -170,7 +148,7 @@ create_redis_service:
 
       [Service]
       User=root
-      ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
+      ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
       Restart=always
       RestartSec=5
 

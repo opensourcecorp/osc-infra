@@ -2,7 +2,7 @@
 here = File.dirname(__FILE__)
 
 Vagrant.configure("2") do |config|
-  box = "ociregistry"
+  box = "baseimg"
 
   username = "packer"
   password = "packer"
@@ -32,11 +32,14 @@ Vagrant.configure("2") do |config|
     # Images can be pretty big, so expand the disk here
     cfg.vm.disk :disk, size: "20GB", primary: true
 
+    # This script is already on the disk, but this lets us update it with local changes without rebuilding the entire image
+    cfg.vm.provision "file", source: "#{here}/../baseimg/scripts/run/main.sh", destination: "/tmp/main.sh"
+    cfg.vm.provision "shell", inline: "sudo cp /tmp/main.sh /usr/local/baseimg/scripts/run/main.sh"
     cfg.vm.provision "shell",
       inline: <<-SCRIPT
         export app_name='ociregistry'
-        export configmgmt_address='configmgmt.service.consul'
-        bash /usr/local/imgbuilder/scripts/run/main.sh
+        export configmgmt_address='10.0.1.10'
+        bash /usr/local/baseimg/scripts/run/main.sh
       SCRIPT
   end
 

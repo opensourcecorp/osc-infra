@@ -1,11 +1,11 @@
-# imgbuilder's VM by itself isn't really anything special, but you can use this
+# baseimg's VM by itself isn't really anything special, but you can use this
 # Vagrantfile to try out ad-hoc VM stuff for potential net-new platforms
 
 # For root Vagrantfile to keep paths consistent; use in place of '.' in paths
 here = File.dirname(__FILE__)
 
 Vagrant.configure("2") do |config|
-  box = "imgbuilder"
+  box = "baseimg"
 
   username = "packer"
   password = "packer"
@@ -22,15 +22,15 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.define "imgbuilder" do |imgbuilder|
-    imgbuilder.vm.box = box
-    imgbuilder.vm.synced_folder "#{here}", "/vagrant" # , disabled: true
-    imgbuilder.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
-    imgbuilder.vm.network "forwarded_port", guest: 80, host: 8080
-    imgbuilder.vm.provision "file", source: "scripts", destination: "scripts"
-    imgbuilder.vm.provision "shell",
+  config.vm.define "baseimg" do |baseimg|
+    baseimg.vm.box = box
+    baseimg.vm.synced_folder "#{here}", "/vagrant" # , disabled: true
+    baseimg.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+    baseimg.vm.network "forwarded_port", guest: 80, host: 8080
+    baseimg.vm.provision "file", source: "scripts", destination: "scripts"
+    baseimg.vm.provision "shell",
       inline: <<-SCRIPT
-        export app_name=imgbuilder
+        export app_name=baseimg
         export configmgmt_address=127.0.0.1
         # bash scripts/build/main.sh
         # bash scripts/run/main.sh

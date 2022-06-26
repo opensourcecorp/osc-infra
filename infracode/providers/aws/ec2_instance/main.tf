@@ -17,7 +17,7 @@ resource "aws_spot_instance_request" "main" {
     #!/usr/bin/env bash
     export configmgmt_address=${var.configmgmt_address}
     export app_name=${var.app_name}
-    bash /usr/local/imgbuilder/scripts/run/main.sh
+    bash /usr/local/baseimg/scripts/run/main.sh
   EOF
   vpc_security_group_ids = var.use_static_ip ? null : local.sg_ids
 

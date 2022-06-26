@@ -45,9 +45,9 @@ source "amazon-ebs" "main" {
 
   source_ami_filter {
     filters = {
-      # imgbuilder & ... start from Debian base, others start from imgbuilder (or another base from imgbuilder)
-      name                = local.source_ami_name_pattern
-      root-device-type    = "ebs"
+      # baseimg & ... start from Debian base, others start from baseimg (or another base from baseimg)
+      name             = local.source_ami_name_pattern
+      root-device-type = "ebs"
       virtualization-type = "hvm"
     }
     most_recent = true
@@ -167,8 +167,8 @@ source "proxmox-iso" "main" {
 }
 
 source "proxmox-clone" "main" {
-  # This expects the clone/start point to be done off of imgbuilder's premade VM template
-  clone_vm = replace(local.vm_name, var.app_name, "imgbuilder")
+  # This expects the clone/start point to be done off of baseimg's premade VM template
+  clone_vm = replace(local.vm_name, var.app_name, "baseimg")
   cpu_type = "host"
   # disks {
   #   type              = "scsi"
@@ -251,23 +251,23 @@ build {
   ]
 
   # Make a no-root-needed staging area for uploaded source files/directories,
-  # and then copy them up -- first imgbuilder's common files, and then any optional
+  # and then copy them up -- first baseimg's common files, and then any optional
   # other ones provided by apps
   provisioner "shell" {
     execute_command = local.execute_command
     inline = [
-      "mkdir -p /tmp/source_files/imgbuilder",
+      "mkdir -p /tmp/source_files/baseimg",
       "chmod -R 0777 /tmp/source_files"
     ]
   }
   provisioner "file" {
     sources     = ["./scripts"]
-    destination = "/tmp/source_files/imgbuilder/"
+    destination = "/tmp/source_files/baseimg/"
   }
   provisioner "shell" {
     execute_command = local.execute_command
     inline = [
-      "cp -r /tmp/source_files/imgbuilder /usr/local/"
+      "cp -r /tmp/source_files/baseimg /usr/local/"
     ]
   }
   provisioner "file" {
@@ -279,12 +279,12 @@ build {
   provisioner "shell" {
     execute_command = local.execute_command
     inline = [
-      "bash /usr/local/imgbuilder/scripts/build/virtualbox-network-setup.sh"
+      "bash /usr/local/baseimg/scripts/build/virtualbox-network-setup.sh"
     ]
     only = ["virtualbox-iso.main", "virtualbox-ovf.main"]
   }
 
-  # Run the build script provided by imgbuilder
+  # Run the build script provided by baseimg
   provisioner "shell" {
     environment_vars = [
       "app_name=${var.app_name}",
@@ -293,7 +293,7 @@ build {
     execute_command = local.execute_command
     inline = [
       "sleep ${var.build_delay}",
-      "bash /usr/local/imgbuilder/scripts/build/main.sh"
+      "bash /usr/local/baseimg/scripts/build/main.sh"
     ]
   }
 
@@ -310,7 +310,7 @@ build {
   provisioner "shell" {
     execute_command = local.execute_command
     inline = [
-      "bash /usr/local/imgbuilder/scripts/build/virtualbox-network-setup.sh down"
+      "bash /usr/local/baseimg/scripts/build/virtualbox-network-setup.sh down"
     ]
     only = ["virtualbox-iso.main", "virtualbox-ovf.main"]
   }

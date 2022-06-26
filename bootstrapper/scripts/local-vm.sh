@@ -3,6 +3,9 @@ set -euo pipefail
 
 here="$(dirname "$0")"
 
+# Set the local builds to be headless
+export PKR_VAR_headless=true
+
 # shellcheck disable=SC1091
 source "${here}"/utils.sh
 
@@ -13,151 +16,83 @@ required_tools=(
   make
   packer
   vagrant
-  vboxmanage
 )
 check-required-tools "${required_tools[@]}"
 
-# Check that VBox has a host-only network configured correctly.
-# Hey look a printf call that says the same thing, wow.
-printf 'Checking that VBox has a host-only network configured correctly...\n'
-if (! vboxmanage list hostonlyifs | grep vboxnet0) || (! vboxmanage list hostonlyifs | grep '10.0.1.0') ; then
-  printf "WARNING: The OSC bootstrapper expects VirtualBox to have a 'vboxnet0' host-only adapter available with a static 10.0.1.0/24 address space.\n"
-  read -rp 'Would you like the bootstrapper to try and set up these for you? [y/n]: ' setup_vbox_for_user
-  if [[ "${setup_vbox_for_user}" =~ ye?s? ]]; then
-    sudo mkdir -p /etc/vbox
-    printf '# Added by osc-infra bootstrapper\n* 0.0.0.0/0 ::/0\n' | sudo tee /etc/vbox/networks.conf
-    vboxmanage hostonlyif create
-    vboxmanage hostonlyif ipconfig vboxnet0 --ip 10.0.1.0
-    vboxmanage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0
+# Check which local hypervisor we're using, since it could be VirtualBox OR
+# Hyper-V (hence why we didn't check for either CLI command in the array above)
+hypervisor=''
+if command -v vboxmanage > /dev/null ; then
+  hypervisor='virtualbox'
+elif uname -a | grep -q -i -E 'microsoft|wsl' ; then
+  hypervisor='hyperv'
+else
+  printf 'ERROR: no valid local hypervisor could be detected!\n' >&2
+  exit 1
+fi
+
+if [[ "${hypervisor}" == 'virtualbox' ]]; then
+
+  # Check that VBox has a host-only network configured correctly.
+  # Hey look a printf call that says the same thing, wow.
+  printf 'Checking that VBox has a host-only network configured correctly...\n'
+  if (! vboxmanage list hostonlyifs | grep vboxnet0) || (! vboxmanage list hostonlyifs | grep '10.0.1.0') ; then
+    printf "WARNING: The OSC bootstrapper expects VirtualBox to have a 'vboxnet0' host-only adapter available with a static 10.0.1.0/24 address space.\n"
+    read -rp 'Would you like the bootstrapper to try and set up these for you? [y/n]: ' setup_vbox_for_user
+    if [[ "${setup_vbox_for_user}" =~ ye?s? ]]; then
+      sudo mkdir -p /etc/vbox
+      printf '# Added by osc-infra bootstrapper\n* 0.0.0.0/0 ::/0\n' | sudo tee /etc/vbox/networks.conf
+      vboxmanage hostonlyif create
+      vboxmanage hostonlyif ipconfig vboxnet0 --ip 10.0.1.0
+      vboxmanage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0
+    else
+      log-err "The OSC bootstrapper expects VirtualBox to have a 'vboxnet0' host-only adapter available with a static 10.0.1.0/24 address space"
+    fi
+  fi
+  check-errors
+
+fi
+
+subsystems=$(get-subsystems)
+
+if [[ "${instruction:-down}" == 'up' ]]; then
+
+  # Build the baseimg... base image lol, & Vagrant box (for debugging) if
+  # they don't exist yet
+  if [[ ! -d "${OSC_INFRA_ROOT}"/baseimg/output-"${hypervisor}"-iso-baseimg/ ]]; then
+    printf 'Base image output directory not found; creating base image\n'
+    make -C "${OSC_INFRA_ROOT}"/baseimg vagrant-box \
+      app_name=baseimg \
+      var_file="${OSC_INFRA_ROOT}"/baseimg/baseimgvars/"${hypervisor}"-iso.pkrvars.hcl \
+      only="${hypervisor}"-iso.main
   else
-    log-err "The OSC bootstrapper expects VirtualBox to have a 'vboxnet0' host-only adapter available with a static 10.0.1.0/24 address space"
+    printf 'Base image output directory found; skipping build\n'
+    printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_INFRA_ROOT}"/baseimg/output-"${hypervisor}"-iso-baseimg/
   fi
+
+  # Loop through & start the subsystems. We could just circumvent this with a
+  # single `vagrant up` since it's an aggregated Vagrantfile, but this loop
+  # allows us to control for things that the get-subsystems utils function has
+  # already checked for, like skipping commented-out lines in subsystems.txt, or
+  # skipping clustered VM components that have in-Vagrantfile logic to disable
+  # them
+  for subsystem in ${subsystems}; do
+    (cd "${OSC_INFRA_ROOT}/${subsystem}" && vagrant up)
+  done
+
+  ### TESTS
+
+  # if vagrant status cicd-controller-1 > /dev/null 2>&1 ; then # run cicd test(s)
+  #   printf 'Running a dummy cicd pipeline to give you something to see in the console, and to test interconnectivity\n'
+  # fi
+
+  ### END TESTS
+
+  printf '\nSuccessfully bootstrapped the specified OpenSourceCorp VM cluster locally!\n'
+  printf 'You can tear down the running VMs by running "bootstrap.sh local-vm down" from this directory\n'
+
+elif [[ "${instruction}" == 'down' ]]; then
+  for subsystem in ${subsystems}; do
+    (cd "${OSC_INFRA_ROOT}/${subsystem}" && vagrant destroy -f)
+  done
 fi
-check-errors
-
-# Where the shared OSC Packer cache will live
-export PACKER_CACHE_DIR="${OSC_ROOT}/.packer.d/packer_cache"
-
-# Set the local builds to be headless
-export PKR_VAR_headless=true
-
-# BIG OL' LOOP
-while read -r subsystem; do
-
-  # Don't process commented-out subsystems
-  if grep -qE '^#' <<< "${subsystem}"; then
-    printf 'Subsystem "%s" is commented out in bootstrapper/subsystems.txt, so will not be processed\n' "$(sed -E 's/# ?//' <<< "${subsystem}")"
-    continue
-  fi
-
-  # Build the imgbuilder base image if it doesn't exist (and if we haven't already
-  # checked in this loop)
-  if [[ "${subsystem}" == 'imgbuilder' ]]; then
-    if [[ ! -d "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/ ]]; then
-      printf 'imgbuilder base image output directory not found; creating imgbuilder base image\n'
-      make -C "${OSC_ROOT}"/imgbuilder vagrant-box \
-        app_name=imgbuilder \
-        var_file="${OSC_ROOT}"/imgbuilder/imgbuildervars/virtualbox-iso.pkrvars.hcl \
-        only=virtualbox-iso.main
-    else
-      printf 'imgbuilder base image output directory found; skipping build\n'
-      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-imgbuilder/
-    fi
-  fi
-
-  # Build the other images from imgbuilder's OVF build output, if they don't exist
-  if [[ "${subsystem}" != 'imgbuilder' ]]; then
-    if [[ ! -d "${OSC_ROOT}/imgbuilder/output-virtualbox-ovf-${subsystem}/" ]]; then
-      # Many images require others to be running during provisioning, so start them in the right order
-      # TODO: I don't know how to do this more cleanly than nested if-blocks
-      if [[ "${subsystem}" != 'configmgmt' ]] ; then
-        vagrant up configmgmt
-        if [[ "${subsystem}" != 'netsvc' ]] ; then
-          vagrant up netsvc
-          if [[ "${subsystem}" != 'secretsmgmt' ]] ; then
-            vagrant up secretsmgmt
-            if [[ "${subsystem}" != 'datastore' ]] ; then
-              vagrant up datastore
-              # To save RAM, only start up replica if it's set in the Vagrantfile
-              grep 'has_replica = true' "${OSC_ROOT}"/datastore/Vagrantfile && vagrant up datastore-replica
-            fi
-          fi
-        fi
-      fi
-      # Symlink imgbuilder's framework to each repo to build from
-      ln -fs "${OSC_ROOT}"/imgbuilder "${OSC_ROOT}/${subsystem}"/imgbuilder-local
-      make -C "${OSC_ROOT}/${subsystem}"/imgbuilder-local vagrant-box \
-        app_name="${subsystem}" \
-        var_file="$(realpath "${OSC_ROOT}/${subsystem}"/imgbuildervars/virtualbox-ovf.pkrvars.hcl)" \
-        only=virtualbox-ovf.main
-    else
-      printf '%s base image output directory found; skipping build\n' "${subsystem}"
-      printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-virtualbox-iso-"${subsystem}"/
-    fi
-  fi
-
-  # TODO: For some reason, imgbuilder symlinks to itself, and it's NOT called
-  # 'imgbuilder-local' like the others. So clean up here. I'm literally pulling my
-  # hair out trying to find out how/where in the world this happens
-  [[ -L "${OSC_ROOT}"/imgbuilder/imgbuilder ]] && rm "${OSC_ROOT}"/imgbuilder/imgbuilder
-
-done < ./subsystems.txt
-
-# LAUNCH
-vagrant up
-
-### TESTS
-
-if vagrant status cicd-worker-1 > /dev/null 2>&1 ; then # run cicd test(s)
-
-  # Grab the fly CLI from cicd (Concourse CI), and log in
-  if [[ ! -f ./fly ]]; then
-    curl -fsSL -q -o ./fly 'http://localhost:8081/api/v1/cli?arch=amd64&platform=linux'
-  fi
-  chmod +x ./fly
-
-  cicd_user=$(awk '/concourse_local_user/ { print $2 }' "${OSC_ROOT}"/configmgmt/salt/pillar/cicd/secret.sls)
-  cicd_pass=$(awk '/concourse_local_password/ { print $2 }' "${OSC_ROOT}"/configmgmt/salt/pillar/cicd/secret.sls)
-  ./fly -t main login -u "${cicd_user}" -p "${cicd_pass}" -c http://localhost:8081 > /dev/null
-  ./fly -t main sync
-  printf '\nSuccessfully logged in to cicd (via the fly CLI from Concourse CI).\n'
-  printf 'Log in to web console at localhost:8081 using the user/pass at configmgmt/salt/pillar/cicd/secret.sls.\n'
-  printf 'fly CLI utility left in current directory.\n'
-
-  printf 'Running a dummy cicd pipeline to give you something to see in the console, and to test interconnectivity\n'
-  cat <<EOF > /tmp/hello-osc.yaml
----
-jobs:
-- name: hello-osc
-  plan:
-  - task: say-hello
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: ociregistry.service.consul/mirrors/alpine
-          tag: latest
-      run:
-        path: echo
-        args: ["Hello, OpenSourceCorp!"]
-
-EOF
-  ./fly -t main validate-pipeline \
-    --config /tmp/hello-osc.yaml
-  ./fly -t main set-pipeline \
-    --pipeline hello-osc \
-    --config /tmp/hello-osc.yaml \
-    --non-interactive
-  ./fly -t main unpause-pipeline \
-    --pipeline hello-osc
-  ./fly -t main trigger-job \
-    --job hello-osc/hello-osc \
-    --watch
-
-fi
-
-### END TESTS
-
-printf '\nSuccessfully bootstrapped the specified OpenSourceCorp VM cluster locally!\n'
-printf 'You can tear down the running VMs by running "vagrant destroy -f" from this directory\n'

@@ -2,7 +2,7 @@
 here = File.dirname(__FILE__)
 
 Vagrant.configure("2") do |config|
-  box = "sourcecode"
+  box = "baseimg"
 
   num_replicas = 0
 
@@ -24,17 +24,21 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.define "sourcecode" do |sourcecode|
-    sourcecode.vm.box = box
-    sourcecode.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
-    sourcecode.vm.network "forwarded_port", guest: 8443, host: 8443
-    sourcecode.vm.synced_folder "#{here}", "/vagrant", disabled: true
-    sourcecode.vm.provision "shell",
-    inline: <<-SCRIPT
-      export app_name='sourcecode'
-      export configmgmt_address='configmgmt.service.consul'
-      bash /usr/local/imgbuilder/scripts/run/main.sh
-    SCRIPT
+  config.vm.define "sourcecode" do |cfg|
+    cfg.vm.box = box
+    cfg.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}" # type: "dhcp", name: "vboxnet0"
+    cfg.vm.network "forwarded_port", guest: 8443, host: 8443
+    cfg.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+    # This script is already on the disk, but this lets us update it with local changes without rebuilding the entire image
+    cfg.vm.provision "file", source: "#{here}/../baseimg/scripts/run/main.sh", destination: "/tmp/main.sh"
+    cfg.vm.provision "shell", inline: "sudo cp /tmp/main.sh /usr/local/baseimg/scripts/run/main.sh"
+    cfg.vm.provision "shell",
+      inline: <<-SCRIPT
+        export app_name='sourcecode'
+        export configmgmt_address='10.0.1.10'
+        bash /usr/local/baseimg/scripts/run/main.sh
+      SCRIPT
   end
 
 end

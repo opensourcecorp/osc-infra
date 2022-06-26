@@ -16,7 +16,7 @@ disable_apt_sha256_checks:
       printf 'all\n' > /etc/gcrypt/hwf.deny
 
 # Set up a swapfile, since swap partition is disabled
-{# create_swapfile:
+create_swapfile:
   cmd.run:
   - name: |
       swapoff -a
@@ -25,21 +25,22 @@ disable_apt_sha256_checks:
       mkswap /swapfile
       swapon /swapfile
       mkdir -p /etc/fstab.d
-      printf '/swapfile  none  swap  sw  0  0\n' > /etc/fstab.d/swapfile.fstab
+      grep '/swapfile' /etc/fstab || printf '/swapfile  none  swap  sw  0  0\n' >> /etc/fstab
   - creates:
     - /swapfile
-    - /etc/fstab.d/swapfile.fstab #}
 
 # Append stuff to each of these sections as needed
 add_apt_repos:
   cmd.run:
   - name: |
       curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/hashicorp.gpg
+      curl -fsSL https://packages.redis.io/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/redis.gpg
   file.managed:
   - name: /etc/apt/sources.list.d/extra.list
   - replace: true
   - contents: |
       deb [arch=amd64] https://apt.releases.hashicorp.com {{ pillar["os_alias"] }} main
+      deb https://packages.redis.io/deb {{ pillar["os_alias"] }} main
 
 check_up_to_date:
   pkg.uptodate:
@@ -160,7 +161,7 @@ symlink_systemd_resolved_stub:
   - name: |
       sleep 1
       host google.com
-      {%- if pillar['app_name'] not in ['imgbuilder', 'configmgmt', 'netsvc'] %}
+      {%- if pillar['app_name'] not in ['baseimg', 'configmgmt', 'netsvc'] %}
       host configmgmt.service.consul
       {%- endif %}
 render_consul_client_config:

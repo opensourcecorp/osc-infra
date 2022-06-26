@@ -1,4 +1,4 @@
-app_name = "imgbuilder"
+app_name = "baseimg"
 
 ssh_username = "admin" # for Debian
 
