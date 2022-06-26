@@ -69,7 +69,7 @@ variable "source_address" {
 variable "source_ami_filter" {
   description = "String pattern used in filtering the source AMI name"
   type        = string
-  default     = "*imgbuilder*"
+  default     = "*baseimg*"
 }
 
 variable "subnet_cidr_filter" {

@@ -1,26 +1,13 @@
 configmgmt
 ==========
 
-Configuration Management server host deployment & configuration. Currently
-manages a [SaltStack](https://docs.saltproject.io) deployment under the hood,
-and so also stores all non-sensitive Salt States/Pillar data
-(`salt/{salt,pillar}/`) for VM-bound services across OpenSourceCorp.
+Configuration Management subsystem for OSC. Currently manages a
+[SaltStack](https://docs.saltproject.io) deployment under the hood, and so also
+stores all non-sensitive Salt States/Pillar data (`salt/{salt,pillar}/`) for
+VM-bound services across OpenSourceCorp.
 
 `configmgmt` also manages its *own* configuration once it boots, by setting
 itself as a client of its own server on `localhost`.
-
-How to deploy
--------------
-
-`configmgmt` machine images are created via the [imgbuilder](../imgbuilder)
-framework, just like other OSC subsystems.
-
-The easiest way to get `configmgmt` (and the rest of the OSC system stack) up &
-running for development/testing is to use the [OSC local infra
-bootstrapper](../bootstrapper).
-
-For production deployments, refer to the `infracode/` subdirectory for IaC
-configurations/scripts.
 
 How to add a new application
 ----------------------------
@@ -39,8 +26,8 @@ To add a new subsystem or app to `configmgmt`, take the following steps:
 1. `salt/pillar/<subsystem_name>/_core.sls` *at least* needs an `app_name:
    <subsystem_name>` key. This file is also where you would put anything like
    versioning keys, etc. that your `salt/salt/<subsystem_name>/_core.sls`
-   references. For example, `cicd` has a `concourse_version` key in its
-   `_core.sls`.
+   references. For example, `datastore` has a `postgres_version_major` key in
+   its `_core.sls`.
 
 1. If the app will require any secrets for local development, create a
    `salt/pillar/<subsystem_name>/secret.sls` file and add the keys there. This
@@ -59,13 +46,16 @@ To add a new subsystem or app to `configmgmt`, take the following steps:
 1. Edit (in alphabetical order, please) the `salt/{salt,pillar}/top.sls` files
    to allow access for your app to those files you just created.
 
-1. Add `imgbuildervars` files within the app's repo itself. Refer to
-   [`imgbuilder`](../imgbuilder)'s docs for more information.
+1. If there will be a reason for this subsystem to have its own base image built
+   (instead of just runtime configuration), add `baseimgvars` files within the
+   app's repo itself. Refer to [`baseimg`](../baseimg)'s docs for more
+   information.
 
 1. If you are adding a subsystem that is to be considered "core" (i.e. several
-   other downstream subsytems will depend on it), then add its name to the
-   `core_subsystems` array in `../bootstrapper/Vagrantfile`. Be sure the order
-   of the subsystems in that array make sense!
+   other downstream subsytems will depend on it), then add its name to the end
+   of the `../bootstrapper/subsystems.txt` file. Be sure the order of the
+   subsystems in that file make sense! Refer to `bootstrapper`'s `README` for
+   more information.
 
 Developer notes
 ---------------
@@ -78,10 +68,11 @@ Developer notes
   which wipes the Salt Master's public key from the Minion. Salt will throw an
   error if the pubkey on the Minion doesn't match the one on the Master. This
   can happen if the `configmgmt` node is updated while the other nodes are still
-  running (and this ***will*** happen IRL). Until OSC has a reliable place to
-  store static Salt keys for preseeding to all nodes -- Master & Minion alike --
-  this is how to keep things moving.
+  running (and this ***will*** happen IRL). Until OSC has a reliable method for
+  storing static Salt keys for preseeding to all nodes -- Master & Minion alike
+  -- this is how to keep things moving.
 
-  In real scenarios, this is a big security risk since the targeted Salt Master
-  could not be an `configmgmt` node at all, but some impersonating node that
-  could deliver malicious software to any Minion making a `salt-call` request.
+  In real scenarios, this key-wipe is a big security risk since the targeted
+  Salt Master could not be an `configmgmt` node at all, but some impersonating
+  node that could deliver malicious software to any Minion making a `salt-call`
+  request.

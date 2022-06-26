@@ -70,7 +70,6 @@ setup_oci_image_mirror_timer:
       [Install]
       WantedBy=timers.target
 
-# TODO: don't do this, just configure the registry as a pull-through cache
 set_oci_image_mirror_list:
   file.managed:
   - name: /tmp/mirror-images.txt

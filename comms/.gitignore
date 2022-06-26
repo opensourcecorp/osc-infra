@@ -1,3 +1,2 @@
 .vagrant*
 *.auto.tfvars
-imgbuilder-local*

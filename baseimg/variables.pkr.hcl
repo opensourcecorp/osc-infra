@@ -15,12 +15,12 @@ locals {
   ssh_port            = var.ssh_port
   ssh_username        = var.ssh_username
   ssh_wait_timeout    = "120m"
-  virtualbox_ovf_path = "./output-virtualbox-iso-imgbuilder/imgbuilder-packer-${var.os_family}-${var.os_version}-${var.arch}.ovf"
+  virtualbox_ovf_path = "./output-virtualbox-iso-baseimg/baseimg-packer-${var.os_family}-${var.os_version}-${var.arch}.ovf"
   vm_name             = "${var.app_name}-packer-${var.os_family}-${var.os_version}-${var.arch}"
 
   # AWS
-  source_ami_name_pattern = contains(["imgbuilder"], var.app_name) ? "${var.os_family}-${var.os_version_major}-${var.arch}-*" : (var.source_ami_name_pattern == "" ? "*imgbuilder*" : var.source_ami_name_pattern)
-  source_ami_owner_id     = contains(["imgbuilder"], var.app_name) ? "136693071363" : var.source_ami_owner_id
+  source_ami_name_pattern = contains(["baseimg"], var.app_name) ? "${var.os_family}-${var.os_version_major}-${var.arch}-*" : (var.source_ami_name_pattern == "" ? "*baseimg*" : var.source_ami_name_pattern)
+  source_ami_owner_id     = contains(["baseimg"], var.app_name) ? "136693071363" : var.source_ami_owner_id
 }
 
 ##################
@@ -108,14 +108,14 @@ variable "os_version_major" {
   default     = "11"
 }
 
-variable "osc_root" {
-  description = "The local root directory for your OpenSourceCorp repositories. Will default to your OSC_ROOT env var"
+variable "OSC_INFRA_ROOT" {
+  description = "The local root directory for your OpenSourceCorp repositories. Will default to your OSC_INFRA_ROOT env var"
   type        = string
-  default     = env("OSC_ROOT")
+  default     = env("OSC_INFRA_ROOT")
 
   validation {
-    condition     = length(var.osc_root) > 0
-    error_message = "Variable 'osc_root' could not be determined. You can set it with an environment variable called 'OSC_ROOT', or pass it into Packer explicitly."
+    condition     = length(var.OSC_INFRA_ROOT) > 0
+    error_message = "Variable 'OSC_INFRA_ROOT' could not be determined. You can set it with an environment variable called 'OSC_INFRA_ROOT', or pass it into Packer explicitly."
   }
 }
 

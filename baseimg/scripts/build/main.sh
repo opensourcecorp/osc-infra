@@ -31,7 +31,7 @@ ext_pillar:
 EOF
 
 cat <<EOF > /etc/salt/minion
-id: imgbuilder-build-${rand_suffix}
+id: baseimg-build-${rand_suffix}
 master: "127.0.0.1"
 autosign_grains: ["kernel"]
 EOF
@@ -52,7 +52,7 @@ salt-init() {
     exit 1
   fi
 
-  if [[ "${app_name}" == 'imgbuilder' ]]; then
+  if [[ "${app_name}" == 'baseimg' ]]; then
     # These should be provided by the builder at build time
     mkdir -p /srv/{pillar,salt}
     cp -r /tmp/source_files/salt/* /srv/ || {
@@ -90,38 +90,17 @@ salt-init() {
 
   systemctl restart salt-minion.service
   sleep 5
+  printf 'Running configuration...\n'
   salt-call state.apply
 
   # If you don't run this, the SLS files (which may also have secrets) will be on disk!
-  rm -rf /srv/*
+  rm -rf /srv/{salt,pillar}
 
-  apt-wipe
-}
-
-install-packer() {
-  printf '\nInstalling HashiCorp Packer...\n\n' > /dev/stderr && sleep 2
-  curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-  apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-  apt-get update && apt-get install -y packer
-  apt-wipe
-}
-
-init-unstable() {
-  rm /etc/apt/sources.list
-  {
-    echo "deb http://ftp.us.debian.org/debian/ unstable main"
-    echo "deb-src http://ftp.us.debian.org/debian/ unstable main"
-  } > /etc/apt/sources.list
-  apt-get update && apt-get dist-upgrade -y
   apt-wipe
 }
 
 main() {
   salt-init
-  # install-packer
-  if "${use_unstable_repos:-false}"; then
-    init-unstable
-  fi
 }
 
 main

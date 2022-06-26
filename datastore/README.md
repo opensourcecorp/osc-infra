@@ -1,17 +1,12 @@
 datastore
-=====
+=========
 
-Common storage node deployment, e.g. Postgres, etc.
+Common storage node (RDBMS, cache, blob, etc.) for OSC. Currently uses:
 
-How to deploy
--------------
+* [PostgreSQL](https://postgresql.org/)
+* [Redis](https://redis.io)
 
-`datastore` machine images are created via the [imgbuilder](../imgbuilder) framework, and
-configured via [configmgmt](../configmgmt), just like other OSC platforms.
+Roadmap
+-------
 
-The easiest way to get `datastore` (and the rest of the OSC platform stack) up &
-running for development/testing is to use the [OSC local infra
-bootstrapper](../bootstrapper).
-
-For production deployments, refer to the `infracode/` subdirectory for IaC
-configurations/scripts.
+* Blob storage service
