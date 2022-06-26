@@ -24,11 +24,16 @@ fi
 lsblk -l | awk 'NR > 2 && $0 ~ / $/ { print $1 }' > /tmp/unmounted-disk-part
 lsblk -l | awk 'NR > 2 && $0 ~ /\/$/ { print $1 }' > /tmp/root-disk-part
 for part in unmounted root; do
+  # --fudge 0 tells growpart to grow the partition no matter *how much* it can grow
   growpart \
+    --fudge 0 \
     /dev/"$(sed -E 's;(.*)[0-9]+;\1;' /tmp/${part}-disk-part)" \
     "$(sed -E 's;.*([0-9]+);\1;' /tmp/${part}-disk-part)"
 done
 resize2fs -p -F /dev/"$(cat /tmp/root-disk-part)"
+# Show what the disk layout now looks like
+lsblk
+df -h
 
 # Need to edit the Consul Client config first, so it can use configmgmt's DNS name
 # TODO: make this less of a garbage thing to do; the iface name could also end up being super brittle
@@ -54,4 +59,5 @@ if grep -qE ".*-build.*" /etc/salt/minion ; then
   systemctl restart salt-minion.service
 fi
 
+printf 'Running configuration...\n'
 salt-call state.apply

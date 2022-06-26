@@ -1,8 +1,5 @@
-test:
-	@printf 'No tests specified for osc-infra right now\n'
-
 clean:
-	rm -rf ./imgbuilder/output-*
+	rm -rf ./baseimg/output-*
 	find . -type l -delete
 	for box in $$(vagrant box list | awk '{ print $$1 }'); do vagrant box remove "$${box}" || true ; done
 	find . -type d -name '.vagrant' -exec rm -rf {} +

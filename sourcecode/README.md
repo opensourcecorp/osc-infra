@@ -1,14 +1,11 @@
 sourcecode
-====
+==========
 
-*sourcecode pls.*
-
----
-
-Source code management platform deployment & configuration. Currently uses
+Source code management platform for OSC. Currently uses
 [Gitea](https://gitea.io) under the hood.
 
 Roadmap
 -------
 
-- Up & running :)
+* Subsystem is partially configured, but unused for now as we continue to
+  leverage GitHub during early development

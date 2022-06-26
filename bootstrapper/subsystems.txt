@@ -1,4 +1,3 @@
-imgbuilder
 configmgmt:core
 netsvc:core
 secretsmgmt:core

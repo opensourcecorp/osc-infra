@@ -57,17 +57,17 @@ subsystems=$(get-subsystems)
 
 if [[ "${instruction:-down}" == 'up' ]]; then
 
-  # Build the imgbuilder base image & Vagrant box (for debugging) if they don't
-  # exist yet
-  if [[ ! -d "${OSC_ROOT}"/imgbuilder/output-"${hypervisor}"-iso-imgbuilder/ ]]; then
-    printf 'imgbuilder base image output directory not found; creating imgbuilder base image\n'
-    make -C "${OSC_ROOT}"/imgbuilder vagrant-box \
-      app_name=imgbuilder \
-      var_file="${OSC_ROOT}"/imgbuilder/imgbuildervars/"${hypervisor}"-iso.pkrvars.hcl \
+  # Build the baseimg... base image lol, & Vagrant box (for debugging) if
+  # they don't exist yet
+  if [[ ! -d "${OSC_INFRA_ROOT}"/baseimg/output-"${hypervisor}"-iso-baseimg/ ]]; then
+    printf 'Base image output directory not found; creating base image\n'
+    make -C "${OSC_INFRA_ROOT}"/baseimg vagrant-box \
+      app_name=baseimg \
+      var_file="${OSC_INFRA_ROOT}"/baseimg/baseimgvars/"${hypervisor}"-iso.pkrvars.hcl \
       only="${hypervisor}"-iso.main
   else
-    printf 'imgbuilder base image output directory found; skipping build\n'
-    printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_ROOT}"/imgbuilder/output-"${hypervisor}"-iso-imgbuilder/
+    printf 'Base image output directory found; skipping build\n'
+    printf '(you can force a rebuild by removing the output directory %s)\n' "${OSC_INFRA_ROOT}"/baseimg/output-"${hypervisor}"-iso-baseimg/
   fi
 
   # Loop through & start the subsystems. We could just circumvent this with a
@@ -77,7 +77,7 @@ if [[ "${instruction:-down}" == 'up' ]]; then
   # skipping clustered VM components that have in-Vagrantfile logic to disable
   # them
   for subsystem in ${subsystems}; do
-    (cd "${OSC_ROOT}/${subsystem}" && vagrant up)
+    (cd "${OSC_INFRA_ROOT}/${subsystem}" && vagrant up)
   done
 
   ### TESTS
@@ -89,10 +89,10 @@ if [[ "${instruction:-down}" == 'up' ]]; then
   ### END TESTS
 
   printf '\nSuccessfully bootstrapped the specified OpenSourceCorp VM cluster locally!\n'
-  printf 'You can tear down the running VMs by running "vagrant destroy -f" from this directory\n'
+  printf 'You can tear down the running VMs by running "bootstrap.sh local-vm down" from this directory\n'
 
 elif [[ "${instruction}" == 'down' ]]; then
   for subsystem in ${subsystems}; do
-    (cd "${OSC_ROOT}/${subsystem}" && vagrant destroy -f)
+    (cd "${OSC_INFRA_ROOT}/${subsystem}" && vagrant destroy -f)
   done
 fi

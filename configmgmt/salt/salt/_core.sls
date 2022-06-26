@@ -160,7 +160,7 @@ symlink_systemd_resolved_stub:
   - name: |
       sleep 1
       host google.com
-      {%- if pillar['app_name'] not in ['imgbuilder', 'configmgmt', 'netsvc'] %}
+      {%- if pillar['app_name'] not in ['baseimg', 'configmgmt', 'netsvc'] %}
       host configmgmt.service.consul
       {%- endif %}
 render_consul_client_config:

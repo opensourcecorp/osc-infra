@@ -2,7 +2,7 @@
 here = File.dirname(__FILE__)
 
 Vagrant.configure("2") do |config|
-  box = "secretsmgmt"
+  box = "baseimg"
 
   username = "packer"
   password = "packer"
@@ -19,17 +19,21 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.define "secretsmgmt" do |secretsmgmt|
-    secretsmgmt.vm.box = box
+  config.vm.define "secretsmgmt" do |cfg|
+    cfg.vm.box = box
 
-    secretsmgmt.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}"
-    secretsmgmt.vm.network "forwarded_port", guest: 8200, host: 8200
-    secretsmgmt.vm.synced_folder "#{here}", "/vagrant", disabled: true
-    secretsmgmt.vm.provision "shell",
+    cfg.vm.network "private_network", ip: "10.0.1.#{rand(20..254)}"
+    cfg.vm.network "forwarded_port", guest: 8200, host: 8200
+    cfg.vm.synced_folder "#{here}", "/vagrant", disabled: true
+
+    # This script is already on the disk, but this lets us update it with local changes without rebuilding the entire image
+    cfg.vm.provision "file", source: "#{here}/../baseimg/scripts/run/main.sh", destination: "/tmp/main.sh"
+    cfg.vm.provision "shell", inline: "sudo cp /tmp/main.sh /usr/local/baseimg/scripts/run/main.sh"
+    cfg.vm.provision "shell",
       inline: <<-SCRIPT
         export app_name='secretsmgmt'
-        export configmgmt_address='configmgmt.service.consul'
-        bash /usr/local/imgbuilder/scripts/run/main.sh
+        export configmgmt_address='10.0.1.10'
+        bash /usr/local/baseimg/scripts/run/main.sh
       SCRIPT
   end
 

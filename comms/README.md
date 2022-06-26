@@ -1,5 +1,7 @@
 comms
-=========
+=====
 
-Internal chat platform deployment for OSC. Currently uses
-[Zulip](https://zulip.com).
+Internal chat platform for OSC. Currently uses [Zulip](https://zulip.com).
+
+Roadmap
+-------

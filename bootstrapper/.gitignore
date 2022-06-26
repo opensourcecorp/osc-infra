@@ -1,9 +1,5 @@
 .vagrant*
 *.auto.tfvars
-imgbuilder-local*
-
-# fly CLI from cicd/Concourse
-fly*
 
 # Log files
 *.log

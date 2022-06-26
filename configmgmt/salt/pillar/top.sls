@@ -43,8 +43,8 @@ base:
   - sourcecode._core
   - sourcecode.secret
 
-  'imgbuilder*':
-  - imgbuilder._core
+  'baseimg*':
+  - baseimg._core
 
   # External (non-OSC-maintained) minions
   # 'ryapric-game-servers*':
