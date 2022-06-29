@@ -38,9 +38,18 @@ That being said, the core requirements are as follows:
   * Git
   * GNU Make
   * Packer
-  * Vagrant
-  * VirtualBox (or possibly Hyper-V -- refer to `baseimg` for the status of that
-    work)
+  * `local-vm`:
+    * Vagrant
+    * VirtualBox (or possibly Hyper-V -- refer to `baseimg` for the status of that
+      work)
+  * `aws`:
+    * An AWS account
+    * AWS profile configuration in `${HOME}/.aws/config`
+    * A set of credentials in `${HOME}/.aws/credentials` (these can be either
+      IAM User creds, or the results of an assumed role, but they need to be in
+      that file)
+    * Relevant AWS environment variables exported for the bootstrapper (e.g.
+      `AWS_PROFILE`, etc.)
 
 How to Use
 ----------
@@ -57,14 +66,14 @@ export OSC_INFRA_ROOT=/path/to/osc/root
 
 But, there most likely isn't a reason for you to do that.
 
-Additionally, in order to save on host memory, the bootstrapper by default will
-only run the subsystems considered "core" to the system as a whole (delineated
-as `name:core` in `subsystems.txt`). At the time of this writing, those services
-are `configmgmt`, `netsvc`, `secretsmgmt`, and `datastore` (more info for which
-can be found in the adjacent directories in this repo). In order to launch more
-than those core subsystems, you can set the `OSC_ADDL_SUBSYSTEMS` environment
-variable as a comma-separated string of *additional* subsystem names you want to
-deploy, e.g.:
+Additionally, in order to save on host memory and/or hosting costs, the
+bootstrapper by default will only run the subsystems considered "core" to the
+system as a whole (delineated as `name:core` in `subsystems.txt`). At the time
+of this writing, those services are `configmgmt`, `netsvc`, `secretsmgmt`, and
+`datastore` (more info for which can be found in the adjacent directories in
+this repo). In order to launch more than those core subsystems, you can set the
+`OSC_ADDL_SUBSYSTEMS` environment variable as a comma-separated string of
+*additional* subsystem names you want to deploy, e.g.:
 
 ```sh
 export OSC_ADDL_SUBSYSTEMS=ociregistry,cicd
@@ -73,11 +82,11 @@ export OSC_ADDL_SUBSYSTEMS=ociregistry,cicd
 Once you have all prereqs satisfied, run the main bootstrapper script:
 
 ```sh
-./bootstrap.sh [bootstrapper_name] [up | down]
+./bootstrap.sh [bootstrapper-name] [up | down]
 ```
 
-The default (and currently, only supported) bootstrapper is `local-vm`, with
-`down` being the default subcommand.
+There are intentionally no default bootstrapper values, so you will need to
+provide each of those listed above.
 
 The bootstrapper does what it can to cache steps in the process, so that
 subsequent stack creations are much faster -- but the first time you invoke it
@@ -97,7 +106,7 @@ Cleanup
 -------
 
 From this root directory, you just need to make sure your `OSC_INFRA_ROOT`
-variable is set to the value you used to deploy everything, and run:
+variable is set (or unset) to the value you used to deploy everything, and run:
 
 ```sh
 ./bootstrap.sh [bootstrapper_name] down

@@ -17,15 +17,14 @@ required_tools=(
 )
 check-required-tools "${required_tools[@]}"
 
-# May also need Gaia, if modules are referencing a local dev version of it
-repo-clone infracode
-
-for awsfile in config credentials; do
-  if [[ ! -f "${HOME}"/.aws/"${awsfile}" ]]; then
+for awsfile in "${HOME}"/.aws/{config,credentials} ; do
+  if [[ ! -f "${awsfile}" ]]; then
     log-err "AWS config file '${awsfile}' not found"
   fi
 done
 check-errors
+
+subsystems=$(get-subsystems)
 
 # BIG OL' LOOP
 if [[ "${instruction:-down}" == 'up' ]]; then
@@ -37,32 +36,13 @@ if [[ "${instruction:-down}" == 'up' ]]; then
     var_file="$(realpath "${OSC_INFRA_ROOT}"/baseimg/baseimgvars/amazon-ebs.pkrvars.hcl)" \
     only=amazon-ebs.main
 
-  # BUILD
-  while read -r subsystem; do
-
-    # Build the other images from baseimg's AMI build output
-    if [[ "${subsystem}" != 'baseimg' ]]; then
-      # Many images require others to be running during provisioning, so start them in the right order
-      if [[ "${subsystem}" != 'configmgmt' ]] ; then
-        aws-up configmgmt
-        if [[ "${subsystem}" != 'netsvc' ]] ; then
-          aws-up netsvc
-          if [[ "${subsystem}" != 'datastore' ]] ; then
-            aws-up datastore
-          fi
-        fi
-      fi
-    fi
-
-  done < ./subsystems.txt
-
   # LAUNCH
-  while read -r subsystem; do
+  for subsystem in ${subsystems}; do
     aws-up "${subsystem}"
-  done < ./subsystems.txt
+  done
 
 elif [[ "${instruction}" == 'down' ]]; then
-  while read -r subsystem; do
+  for subsystem in ${subsystems}; do
     aws-down "${subsystem}"
-  done < ./subsystems.txt
+  done
 fi

@@ -72,8 +72,8 @@ get-subsystems() {
 
 # Adds dummy secret SLS files to configmgmt's repo, so all the services needing
 # secrets can start.
-add-configmgmt-dummy-secrets() {
-  printf 'Checking for any missing, needed, dummy secrets for services to configmgmt so they can start\n'
+add-dummy-secrets() {
+  printf 'Checking for any missing, needed, dummy secrets for services or bootstrap targets\n'
   printf "!!! YOU BETTER CHANGE THESE IF YOU DEPLOY THIS STUFF FOR REAL, OBVIOUSLY !!!\n"
   find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-dummy-secrets
   while read -r secrets_file; do
@@ -116,9 +116,11 @@ aws-up() {
     printf 'baseimg has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode || exit 1
-  terraform init -backend-config=backend-s3.tfvars
-  terraform apply -var-file=aws.tfvars -auto-approve
+  (
+    cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode/aws || exit 1
+    terraform init -backend-config=backend-s3.tfvars
+    terraform apply -var-file=aws.tfvars -auto-approve
+  )
 }
 
 aws-down() {
@@ -127,9 +129,11 @@ aws-down() {
     printf 'baseimg has no launch candidate; skipping\n'
     return 0
   fi
-  cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode || exit 1
-  terraform init -backend-config=backend-s3.tfvars
-  terraform destroy -var-file=aws.tfvars -auto-approve
+  (
+    cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode/aws || exit 1
+    terraform init -backend-config=backend-s3.tfvars
+    terraform destroy -var-file=aws.tfvars -auto-approve
+  )
 }
 
 # Totally clear all of the AWS infra, including AMIs, etc
