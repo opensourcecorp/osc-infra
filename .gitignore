@@ -1,6 +1,12 @@
 .packer.d/
+.terraform.d/
+
+.terraform/
+*.auto.tfvars
+*backend*.tfvars
+*.tfstate*
 
 *.log
 
-# TODO: Maybe it makes sense to add this later?
+# TODO: Maybe it makes sense to not ignore this later?
 *.code-workspace

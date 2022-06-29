@@ -75,7 +75,9 @@ get-subsystems() {
 add-dummy-secrets() {
   printf 'Checking for any missing, needed, dummy secrets for services or bootstrap targets\n'
   printf "!!! YOU BETTER CHANGE THESE IF YOU DEPLOY THIS STUFF FOR REAL, OBVIOUSLY !!!\n"
-  find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-dummy-secrets
+
+  # secret.sls files
+  find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-infra-dummy-secrets
   while read -r secrets_file; do
     secrets_file_path="${OSC_INFRA_ROOT}/configmgmt/salt/pillar/${secrets_file}"
     if [[ ! -f "${secrets_file_path}" ]]; then
@@ -84,7 +86,12 @@ add-dummy-secrets() {
         log-err "Could not copy secrets file 'dummy-secrets/${secrets_file}' to its destination at '${secrets_file_path}'"
       }
     fi
-  done < /tmp/osc-dummy-secrets
+  done < /tmp/osc-infra-dummy-secrets
+
+  # Secrets files for other infra platforms
+  for subsystem in "${OSC_INFRA_ROOT}"/* ; do
+    [[ -d "${subsystem}"/infracode/aws/ ]] && cp ./dummy-secrets/aws.auto.tfvars "${subsystem}"/infracode/aws/aws.auto.tfvars
+  done
 
   check-errors
 }

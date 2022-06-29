@@ -102,6 +102,29 @@ VirtualBox, this is right-click -> "Reset" on the hung VM).
 If the full stack creation succeeds, you will receive a message in your terminal
 saying as much, with instructions on how to tear it all down.
 
+Dummy Secrets
+-------------
+
+The bootstrapper has a `dummy-secrets` subdirectory that has weak secrets &
+placeholder files that are copied to the right places across the monorepo for
+your stack creation to actually succeed. For the `local-vm` bootstrapper, this
+should work without any user intervention (***but you should change them
+anyway***). However, other target platforms will require you to modify the
+copied files before any stack creation can be attempted. You can modify each of
+these files/values manually, or devise a way to automate the process. For
+example, to update the value needed for the `keypair_name` variable for
+Terraform-driven AWS deployments, this snippet will update the keypair name in
+the generated `aws.auto.tfvars` files:
+
+```sh
+find "${OSC_INFRA_ROOT}" -type f -path '*/infracode/aws/aws.auto.tfvars \
+| xargs -I{} sed -E -i 's/^keypair_name.*/keypair_name = "name-of-my-aws-keypair"/' {}
+```
+
+This may be a more user-friendly experience in the future, but for now, the
+bootstrapper doesn't want to be in the business of making assumptions about a
+user's more complex situations.
+
 Cleanup
 -------
 
@@ -124,7 +147,7 @@ Once that's done, if you want to *completely* remove all artifacts, VM images,
 caches, etc., you can also run:
 
 ```sh
-make clean
+make clean-everything-locally
 ```
 
 Development

@@ -32,8 +32,11 @@ else
   export OSC_INFRA_ROOT
 fi
 
-# Where OSC's Packer data will live
+# Where OSC's infra data will live
 export PACKER_CACHE_DIR="${OSC_INFRA_ROOT}/.packer.d/packer_cache"
+export TF_CLI_CONFIG_FILE="${OSC_INFRA_ROOT}/osc.tfrc"
+export TF_PLUGIN_CACHE_DIR="${OSC_INFRA_ROOT}/.terraform.d/plugin-cache"
+mkdir -p "${TF_PLUGIN_CACHE_DIR}"
 
 # Populate dummy secrets if they don't exist
 add-dummy-secrets
