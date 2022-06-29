@@ -1,2 +1,3 @@
 # Cancel the higher-level ignore for these
 !*.auto.tfvars
+!*backend*.tfvars

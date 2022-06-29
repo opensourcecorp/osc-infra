@@ -89,8 +89,16 @@ add-dummy-secrets() {
   done < /tmp/osc-infra-dummy-secrets
 
   # Secrets files for other infra platforms
-  for subsystem in "${OSC_INFRA_ROOT}"/* ; do
-    [[ -d "${subsystem}"/infracode/aws/ ]] && cp ./dummy-secrets/aws.auto.tfvars "${subsystem}"/infracode/aws/aws.auto.tfvars
+  for subsystem_dir in "${OSC_INFRA_ROOT}"/* ; do
+    # AWS
+    if [[ -d "${subsystem_dir}"/infracode/aws/ ]] ; then
+      # shellcheck disable=SC2155
+      local subsystem_name=$(basename "${subsystem_dir}")
+      local root="${subsystem_dir}/infracode/aws"
+      [[ ! -f "${root}"/backend-s3.tfvars ]] && cp ./dummy-secrets/backend-s3.tfvars "${root}"/backend-s3.tfvars
+      sed -i "s/SUBSYSTEM_NAME/${subsystem_name}/g" "${root}"/backend-s3.tfvars
+      [[ ! -f "${root}"/aws.auto.tfvars ]] && cp ./dummy-secrets/aws.auto.tfvars "${root}"/aws.auto.tfvars
+    fi
   done
 
   check-errors
