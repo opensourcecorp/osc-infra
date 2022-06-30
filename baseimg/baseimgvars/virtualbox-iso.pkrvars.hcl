@@ -7,11 +7,3 @@ app_name = "baseimg"
 source_files = [
   "../configmgmt/salt"
 ]
-
-shell_provisioner = [
-  # "sleep 3600",
-  "mount /home/packer/VBoxGuestAdditions.iso /mnt",
-  "sh /mnt/VBoxLinuxAdditions.run || true", # Guest Additions never seem to exit 0
-  "modinfo vboxsf || exit 1",               # This will actually check the install status
-  "umount /mnt"
-]

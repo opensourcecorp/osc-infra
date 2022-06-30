@@ -18,7 +18,7 @@ variable "app_name" {
 variable "configmgmt_address" {
   description = "IP or DNS name of configmgmt"
   type        = string
-  default     = "configmgmt.service.consul"
+  default     = "10.0.1.10"
 }
 
 variable "desired_private_ip" {
@@ -42,6 +42,11 @@ variable "is_osc_core" {
   description = "Whether the deployment represent core OSC infrastructure. Defaults to 'false' to prevent accidental misrepresenation"
   type        = bool
   default     = false
+}
+
+variable "keypair_local_file" {
+  description = "Path to the EC2 keypair PEM key on the deployer host"
+  type        = string
 }
 
 variable "keypair_name" {
@@ -69,7 +74,7 @@ variable "source_address" {
 variable "source_ami_filter" {
   description = "String pattern used in filtering the source AMI name"
   type        = string
-  default     = "*baseimg*"
+  default     = "osc-baseimg*"
 }
 
 variable "subnet_cidr_filter" {

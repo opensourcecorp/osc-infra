@@ -119,12 +119,6 @@ variable "OSC_INFRA_ROOT" {
   }
 }
 
-variable "shell_provisioner" {
-  description = "Shell commands to run in the provisioning step"
-  type        = list(string)
-  default     = ["printf 'Skipping shell provisioner since none provided\n' > /dev/stderr"]
-}
-
 variable "source_files" {
   description = "Optional list of files/directories to copy into the builder as part of the file provisioner"
   type        = list(string)

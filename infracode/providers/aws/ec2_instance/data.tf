@@ -20,7 +20,7 @@ data "aws_ami" "latest" {
 data "aws_security_group" "common" {
   filter {
     name   = "group-name"
-    values = ["osc-common"]
+    values = ["osc_common"]
   }
 
   vpc_id = data.aws_vpc.main.id

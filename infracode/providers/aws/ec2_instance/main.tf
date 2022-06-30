@@ -8,12 +8,12 @@ resource "aws_spot_instance_request" "main" {
   spot_type                      = "persistent"
   wait_for_fulfillment           = true
 
-  ami                  = data.aws_ami.latest.id
-  iam_instance_profile = var.instance_profile_name != "" ? var.instance_profile_name : null
-  instance_type        = var.instance_type
-  key_name             = var.keypair_name != "" ? var.keypair_name : null
-  subnet_id            = var.use_static_ip ? null : local.subnet_id
-  user_data            = <<-EOF
+  ami                    = data.aws_ami.latest.id
+  iam_instance_profile   = var.instance_profile_name != "" ? var.instance_profile_name : null
+  instance_type          = var.instance_type
+  key_name               = var.keypair_name != "" ? var.keypair_name : null
+  subnet_id              = var.use_static_ip ? null : local.subnet_id
+  user_data              = <<-EOF
     #!/usr/bin/env bash
     export configmgmt_address=${var.configmgmt_address}
     export app_name=${var.app_name}
@@ -56,12 +56,28 @@ resource "aws_spot_instance_request" "main" {
           Key=module_source,Value=https://github.com/opensourcecorp/osc-infra//infracode/providers/aws/ec2_instance \
           Key=deployment_source,Value=${var.source_address}
     SCRIPT
+
     # # TODO: Figure out how to get this to work
     # environment = merge(
     #   { Name = var.name_tag },
     #   { spot_request_id = self.id },
     #   local.default_tags
     # )
+  }
+
+  connection {
+    host        = self.public_ip
+    private_key = file(pathexpand(var.keypair_local_file))
+    user        = "admin"
+  }
+
+  provisioner "remote-exec" {
+    inline = [<<-EOF
+      export app_name='datastore-replica'
+      export configmgmt_address='10.0.1.10'
+      bash /usr/local/baseimg/scripts/run/main.sh
+    EOF
+    ]
   }
 }
 

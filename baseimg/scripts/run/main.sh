@@ -27,8 +27,8 @@ for part in unmounted root; do
   # --fudge 0 tells growpart to grow the partition no matter *how much* it can grow
   growpart \
     --fudge 0 \
-    /dev/"$(sed -E 's;(.*)[0-9]+;\1;' /tmp/${part}-disk-part)" \
-    "$(sed -E 's;.*([0-9]+);\1;' /tmp/${part}-disk-part)"
+    /dev/"$(sed -E 's;(sda|nvme0n[0-9]+).*;\1;' /tmp/${part}-disk-part)" \
+    "$(sed -E 's;^.*[^0-9]+([0-9]+)$;\1;' /tmp/${part}-disk-part)"
 done
 resize2fs -p -F /dev/"$(cat /tmp/root-disk-part)"
 # Show what the disk layout now looks like

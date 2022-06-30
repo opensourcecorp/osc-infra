@@ -11,7 +11,7 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_security_group" "common" {
-  description = "Common rules for these OpenSourceCorp resources"
+  description = "Common rules for OpenSourceCorp resources"
   name        = "${var.name_tag}_common"
   vpc_id      = aws_vpc.main.id
 
@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "egress" {
 
 resource "aws_security_group_rule" "prometheus_node_exporter" {
   type              = "ingress"
-  description       = "Allow Nurse - Prometheus Node Exporter"
+  description       = "Allow Monitoring"
   from_port         = 9100
   to_port           = 9100
   protocol          = "tcp"

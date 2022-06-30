@@ -9,15 +9,8 @@ locals {
 
   tags = merge(
     { Name = var.name_tag },
-    local.default_tags,
-    var.custom_tags
+    local.default_tags
   )
-}
-
-variable "custom_tags" {
-  description = "Any custom tags you want to apply to the VPC resources"
-  type        = map(any)
-  default     = {}
 }
 
 variable "is_osc_core" {

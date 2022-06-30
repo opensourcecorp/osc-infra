@@ -46,8 +46,8 @@ source "amazon-ebs" "main" {
   source_ami_filter {
     filters = {
       # baseimg & ... start from Debian base, others start from baseimg (or another base from baseimg)
-      name             = local.source_ami_name_pattern
-      root-device-type = "ebs"
+      name                = local.source_ami_name_pattern
+      root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
     most_recent = true

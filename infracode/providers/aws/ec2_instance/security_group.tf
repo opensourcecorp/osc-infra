@@ -22,12 +22,11 @@ resource "aws_security_group_rule" "egress" {
 
 resource "aws_security_group_rule" "ping" {
   type              = "ingress"
-  description       = "Ping from everywhere"
+  description       = "Ping from deployer IP" # TODO: this should be a wider subnet, but some environments throw security errors about it being on 0.0.0.0/0, like it was before
   from_port         = 8
   to_port           = 0
   protocol          = "icmp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  ipv6_cidr_blocks  = ["::/0"]
+  cidr_blocks       = ["${chomp(data.http.my_ip.body)}/32"]
   security_group_id = aws_security_group.main.id
 }
 
