@@ -131,10 +131,11 @@ aws-up() {
     printf 'baseimg has no launch candidate; skipping\n'
     return 0
   fi
+  printf '>>> Processing AWS infra for subsystem %s...\n' "${subsystem}"
   (
     cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode/aws || exit 1
     terraform init -backend-config=backend-s3.tfvars
-    terraform apply -var-file=aws.tfvars -auto-approve
+    terraform apply -var-file=aws.tfvars # TODO: add -auto-approve once we're done testing?
   )
 }
 
@@ -144,6 +145,7 @@ aws-down() {
     printf 'baseimg has no launch candidate; skipping\n'
     return 0
   fi
+  printf '>>> Processing AWS infra for subsystem %s...\n' "${subsystem}"
   (
     cd "${OSC_INFRA_ROOT}"/"${subsystem}"/infracode/aws || exit 1
     terraform init -backend-config=backend-s3.tfvars

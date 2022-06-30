@@ -13,12 +13,12 @@ resource "aws_spot_instance_request" "main" {
   instance_type          = var.instance_type
   key_name               = var.keypair_name != "" ? var.keypair_name : null
   subnet_id              = var.use_static_ip ? null : local.subnet_id
-  user_data              = <<-EOF
-    #!/usr/bin/env bash
-    export configmgmt_address=${var.configmgmt_address}
-    export app_name=${var.app_name}
-    bash /usr/local/baseimg/scripts/run/main.sh
-  EOF
+  # user_data              = <<-EOF
+  #   #!/usr/bin/env bash
+  #   export configmgmt_address=${var.configmgmt_address}
+  #   export app_name=${var.app_name}
+  #   bash /usr/local/baseimg/scripts/run/main.sh
+  # EOF
   vpc_security_group_ids = var.use_static_ip ? null : local.sg_ids
 
   # To prevent unexpected shutdown of t3-family Spot instances 
@@ -46,7 +46,7 @@ resource "aws_spot_instance_request" "main" {
   # Need this to apply tags to actual instances, since this resource can't do that itself
   # Also have to duplicate local.default_tags, since provisioners don't let you for_each, UGH
   provisioner "local-exec" {
-    command = <<-SCRIPT
+    command = <<-EOF
       aws ec2 create-tags \
         --resources ${self.spot_instance_id} \
         --tags \
@@ -55,14 +55,7 @@ resource "aws_spot_instance_request" "main" {
           Key="osc:core",Value=${var.is_osc_core ? "true" : "false"} \
           Key=module_source,Value=https://github.com/opensourcecorp/osc-infra//infracode/providers/aws/ec2_instance \
           Key=deployment_source,Value=${var.source_address}
-    SCRIPT
-
-    # # TODO: Figure out how to get this to work
-    # environment = merge(
-    #   { Name = var.name_tag },
-    #   { spot_request_id = self.id },
-    #   local.default_tags
-    # )
+    EOF
   }
 
   connection {
@@ -71,11 +64,21 @@ resource "aws_spot_instance_request" "main" {
     user        = "admin"
   }
 
+  # Set up Salt tree for configmgmt
+  provisioner "local-exec" {
+    command = <<-EOF
+      if [ '${var.app_name}' = 'configmgmt' ]; then
+        scp -i ${pathexpand(var.keypair_local_file)} -o StrictHostKeyChecking=no -r ../../salt admin@${self.public_ip}:/tmp
+      fi
+    EOF
+  }
+
   provisioner "remote-exec" {
     inline = [<<-EOF
-      export app_name='datastore-replica'
+      export app_name='${var.app_name}'
       export configmgmt_address='10.0.1.10'
-      bash /usr/local/baseimg/scripts/run/main.sh
+      [ -d /tmp/salt ] && /tmp/source_files/salt/* /srv/
+      sudo -E bash /usr/local/baseimg/scripts/run/main.sh
     EOF
     ]
   }
