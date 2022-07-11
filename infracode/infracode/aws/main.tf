@@ -8,5 +8,5 @@ module "aws_vpc" {
   source = "../../providers/aws/vpc"
 
   is_osc_core    = true
-  source_address = "https://github.com/opensourcecorp/infracode.git"
+  source_uri = "https://github.com/opensourcecorp/infracode.git"
 }

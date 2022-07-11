@@ -16,7 +16,7 @@ module "ec2" {
   keypair_local_file = var.keypair_local_file
   keypair_name       = var.keypair_name
   name_tag           = var.app_name
-  source_address     = "https://github.com/opensourcecorp/${var.app_name}.git"
+  source_uri     = "https://github.com/opensourcecorp/${var.app_name}.git"
 
   desired_private_ip = "10.0.1.11"
   subnet_cidr_filter = "10.0.1.0/24"
