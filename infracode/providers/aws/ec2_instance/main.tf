@@ -68,7 +68,10 @@ resource "aws_spot_instance_request" "main" {
   provisioner "local-exec" {
     command = <<-EOF
       if [ '${var.app_name}' = 'configmgmt' ]; then
-        scp -i ${pathexpand(var.keypair_local_file)} -o StrictHostKeyChecking=no -r ../../salt admin@${self.public_ip}:/tmp
+        until scp -i ${pathexpand(var.keypair_local_file)} -o StrictHostKeyChecking=no -r ../../salt admin@${self.public_ip}:/tmp; do
+          printf 'Waiting for SSH connection...\n'
+          sleep 1
+        done
       fi
     EOF
   }
@@ -77,7 +80,7 @@ resource "aws_spot_instance_request" "main" {
     inline = [<<-EOF
       export app_name='${var.app_name}'
       export configmgmt_address='10.0.1.10'
-      [ -d /tmp/salt ] && /tmp/source_files/salt/* /srv/
+      [ -d /tmp/salt ] && sudo cp -r /tmp/salt/* /srv/
       sudo -E bash /usr/local/baseimg/scripts/run/main.sh
     EOF
     ]
