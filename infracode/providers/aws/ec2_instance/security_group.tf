@@ -26,7 +26,7 @@ resource "aws_security_group_rule" "ping" {
   from_port         = 8
   to_port           = 0
   protocol          = "icmp"
-  cidr_blocks       = ["${chomp(data.http.my_ip.body)}/32"]
+  cidr_blocks       = ["${chomp(data.http.my_ip.response_body)}/32"]
   security_group_id = aws_security_group.main.id
 }
 
@@ -36,7 +36,7 @@ resource "aws_security_group_rule" "deployer_ssh" {
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["${chomp(data.http.my_ip.body)}/32"]
+  cidr_blocks       = ["${chomp(data.http.my_ip.response_body)}/32"]
   security_group_id = aws_security_group.main.id
 }
 
