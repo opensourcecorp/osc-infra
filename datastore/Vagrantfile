@@ -4,11 +4,19 @@ here = File.dirname(__FILE__)
 Vagrant.configure("2") do |config|
   box = "baseimg"
 
+  cpus   = 1
+  memory = 1024
+
   # Set to true to confirm replica is working; false for when memory-constrained
   has_replica = false
 
   # datastore should persist DB data across VM lifecycles -- change to false if you don't want that
   persist_data = true
+
+  config.vm.provider "libvirt" do |lv|
+    lv.cpus   = cpus
+    lv.memory = memory
+  end
 
   username = "packer"
   password = "packer"
@@ -17,13 +25,12 @@ Vagrant.configure("2") do |config|
   config.ssh.password = password
 
   config.vm.provider "virtualbox" do |vb|
-    vb.cpus = 1
-    vb.memory = 1024
+    vb.cpus   = cpus
+    vb.memory = memory
     # vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
     # much faster startups of subsequent identical base VMs, but leaves the base VM in VBox's storage after destroy op
     # vb.linked_clone = true
   end
-
   if Vagrant.has_plugin?("vagrant-vbguest")
     config.vbguest.auto_update = false
   end
