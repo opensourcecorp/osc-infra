@@ -5,8 +5,7 @@ terraform {
 variable "app_name" {}
 variable "port" {}
 variable "keypair_name" {}
-varaible "keypair_local_file" {}
-
+variable "keypair_local_file" {}
 
 module "ec2" {
   # source = "github.com/opensourcecorp/osc-infra//infracode/providers/aws/ec2_instance"
@@ -18,7 +17,7 @@ module "ec2" {
   keypair_local_file = var.keypair_local_file
   keypair_name       = var.keypair_name
   name_tag           = var.app_name
-  source_uri     = "https://github.com/opensourcecorp/${var.app_name}.git"
+  source_uri         = "https://github.com/opensourcecorp/${var.app_name}.git"
 
   sg_rules_maplist = [
     {
