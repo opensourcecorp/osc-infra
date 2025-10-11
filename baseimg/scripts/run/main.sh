@@ -39,7 +39,9 @@ df -h
 # Need to edit the Consul Client config first, so it can use configmgmt's DNS name
 # TODO: make this less of a garbage thing to do; the iface name could also end up being super brittle (update 2022-06-29: adjusted a bit already, so we'll keep an eye on it)
 if [[ "${app_name}" != 'netsvc' ]]; then
-  inet_device=$(ip address show | grep -Eo 'en.*:' | sed 's/://')
+  # TODO: a VBox update created another interface, so I'm leaving the old
+  # dynamic code but hardcoding the one that always seems to appear for now
+  inet_device='enp0s8' #$(ip address show | grep -Eo 'en.*:' | tail -n1 | sed 's/://')
   ip_addr=$(ip address show dev "${inet_device}" | grep -Eo '10\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+' | head -n1)
   printf 'Editing Consul config. Determined private IP address to be: %s\n' "${ip_addr}"
   sed -E -i "s/^bind_addr.*$/bind_addr = \"${ip_addr}\"/" /etc/consul.d/consul.hcl

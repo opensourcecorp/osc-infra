@@ -77,13 +77,13 @@ add-dummy-secrets() {
   printf "!!! YOU BETTER CHANGE THESE IF YOU DEPLOY THIS STUFF FOR REAL, OBVIOUSLY !!!\n"
 
   # secret.sls files
-  find dummy-secrets/ -type f | sed 's;dummy-secrets/;;' > /tmp/osc-infra-dummy-secrets
+  find "${OSC_INFRA_ROOT}"/bootstrapper/dummy-secrets/ -type f | sed "s;${OSC_INFRA_ROOT}/bootstrapper/dummy-secrets/;;" > /tmp/osc-infra-dummy-secrets
   while read -r secrets_file; do
-    secrets_file_path="${OSC_INFRA_ROOT}/configmgmt/salt/pillar/${secrets_file}"
+    local secrets_file_path="${OSC_INFRA_ROOT}/configmgmt/salt/pillar/${secrets_file}"
     if [[ ! -f "${secrets_file_path}" ]]; then
       printf 'Adding %s\n' "${secrets_file_path}"
-      cp dummy-secrets/"${secrets_file}" "${secrets_file_path}" || {
-        log-err "Could not copy secrets file 'dummy-secrets/${secrets_file}' to its destination at '${secrets_file_path}'"
+      cp "${OSC_INFRA_ROOT}"/bootstrapper/dummy-secrets/"${secrets_file}" "${secrets_file_path}" || {
+        log-err "Could not copy secrets file 'bootstrapper/dummy-secrets/${secrets_file}' to its destination at '${secrets_file_path}'"
       }
     fi
   done < /tmp/osc-infra-dummy-secrets
@@ -95,9 +95,9 @@ add-dummy-secrets() {
       # shellcheck disable=SC2155
       local subsystem_name=$(basename "${subsystem_dir}")
       local root="${subsystem_dir}/infracode/aws"
-      [[ ! -f "${root}"/backend-s3.tfvars ]] && cp ./dummy-secrets/backend-s3.tfvars "${root}"/backend-s3.tfvars
+      [[ ! -f "${root}"/backend-s3.tfvars ]] && cp "${OSC_INFRA_ROOT}"/bootstrapper/dummy-secrets/backend-s3.tfvars "${root}"/backend-s3.tfvars
       sed -i "s/SUBSYSTEM_NAME/${subsystem_name}/g" "${root}"/backend-s3.tfvars
-      [[ ! -f "${root}"/aws.auto.tfvars ]] && cp ./dummy-secrets/aws.auto.tfvars "${root}"/aws.auto.tfvars
+      [[ ! -f "${root}"/aws.auto.tfvars ]] && cp "${OSC_INFRA_ROOT}"/bootstrapper/dummy-secrets/aws.auto.tfvars "${root}"/aws.auto.tfvars
     fi
   done
 

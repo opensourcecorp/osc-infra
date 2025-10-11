@@ -2,8 +2,7 @@
 .terraform.d/
 
 .terraform/
-*.auto.tfvars
-*backend*.tfvars
+*.tfvars
 *.tfstate*
 
 *.log
