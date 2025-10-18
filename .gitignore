@@ -9,3 +9,9 @@
 
 # TODO: Maybe it makes sense to not ignore this later?
 *.code-workspace
+
+deploy/rendered/
+
+# This file isn't gitignored for sensitivity's sake, just so that we can regen it on the fly per
+# environment
+skaffold.yaml
