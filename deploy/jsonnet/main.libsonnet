@@ -1,46 +1,43 @@
+local common = import './common.libsonnet';
+
 local image_name = std.extVar('image_name');
 local image_tag = std.extVar('image_tag');
 
-local common_labels(name) = {
-  'app.kubernetes.io/name': name,
-  'app.kubernetes.io/instance': name,
-};
-
 {
-  namespace(namespace):: {
+  Namespace(name): {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-      name: namespace,
+      name: name,
     },
   },
 
-  configMap(name, namespace, data={}):: {
+  ConfigMap(name, namespace, data={}): {
     apiVersion: 'v1',
     kind: 'ConfigMap',
     metadata: {
       name: name,
       namespace: namespace,
-      labels: common_labels(name),
+      labels: common.Labels(name),
     },
     data: data,
   },
 
-  deployment(name, namespace):: {
+  Deployment(name, namespace): {
     apiVersion: 'apps/v1',
     kind: 'Deployment',
     metadata: {
       name: name,
       namespace: namespace,
-      labels: common_labels(name),
+      labels: common.Labels(name),
     },
     spec: {
       selector: {
-        matchLabels: common_labels(name),
+        matchLabels: common.Labels(name),
       },
       template: {
         metadata: {
-          labels: common_labels(name),
+          labels: common.Labels(name),
         },
         spec: {
           serviceAccountName: name,
@@ -93,13 +90,13 @@ local common_labels(name) = {
     },
   },
 
-  hpa(name, namespace, min=1, max=1):: {
+  HPA(name, namespace, min=1, max=1): {
     apiVersion: 'autoscaling/v2',
     kind: 'HorizontalPodAutoscaler',
     metadata: {
       name: name,
       namespace: namespace,
-      labels: common_labels(name),
+      labels: common.Labels(name),
     },
     spec: {
       scaleTargetRef: {
@@ -134,33 +131,34 @@ local common_labels(name) = {
     },
   },
 
-  serviceAccount(name, namespace):: {
+  ServiceAccount(name, namespace): {
     apiVersion: 'v1',
     kind: 'ServiceAccount',
     metadata: {
       name: name,
       namespace: namespace,
-      labels: common_labels(name),
+      labels: common.Labels(name),
     },
     automountServiceAccountToken: true,
   },
 
-  service(name, namespace, type='ClusterIP'):: {
+  Service(name, namespace, type='ClusterIP'): {
     apiVersion: 'v1',
     kind: 'Service',
     metadata: {
       name: name,
       namespace: namespace,
-      labels: common_labels(name),
+      labels: common.Labels(name),
+      annotations: common.LBAnnotations,
     },
     spec: {
       type: type,
-      selector: common_labels(name),
+      selector: common.Labels(name),
       ports: [
         {
           name: 'http',
           port: 8080,
-          targetPort: 8080,
+          targetPort: 80,
           protocol: 'TCP',
         },
         {
@@ -169,6 +167,41 @@ local common_labels(name) = {
           targetPort: 8082,
           protocol: 'TCP',
         },
+      ],
+    },
+  },
+
+  MetalLB_IPAddressPool(lb_ip_addrs=[]): {
+    apiVersion: 'metallb.io/v1beta1',
+    kind: 'IPAddressPool',
+    metadata: {
+      name: 'main',
+      namespace: common.SystemNamespace,
+    },
+    spec: {
+      addresses: lb_ip_addrs,
+    },
+  },
+
+  MetalLB_L2Advertisement(): {
+    apiVersion: 'metallb.io/v1beta1',
+    kind: 'L2Advertisement',
+    metadata: {
+      name: 'main',
+      namespace: common.SystemNamespace,
+    },
+  },
+
+  MetalLB_BGPAdvertisement(): {
+    apiVersion: 'metallb.io/v1beta1',
+    kind: 'BGPAdvertisement',
+    metadata: {
+      name: 'main',
+      namespace: common.SystemNamespace,
+    },
+    spec: {
+      ipAddressPools: [
+        'main',
       ],
     },
   },

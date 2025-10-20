@@ -4,5 +4,6 @@ apiVersion: "kind.x-k8s.io/v1alpha4"
 nodes:
   - role: "control-plane"
   - role: "worker"
+# Have to set this for MetalLB, as well as editing an IPVS setting post-apply
 networking:
   kubeProxyMode: "ipvs"
